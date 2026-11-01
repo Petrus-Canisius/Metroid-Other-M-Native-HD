@@ -31,7 +31,9 @@ An integrated **read-only RVZ** reader supports direct access to partition data 
 
 The NAND subsystem now exercises directory enumeration, permissions, metadata and writes. A startup SYSCONF image reportedly matched Dolphin. Bluetooth HCI initialization is exercised with no connected Wii Remote. Full Bluetooth input emulation is still pending.
 
-The next reported startup block is **loading AX audio microcode into the DSP**. DSP processing, speaker output, full graphics rendering and a playable game session remain unfinished.
+The AX Wii audio microcode is now processed through a Dolphin-derived high-level DSP/AX implementation. Its command frames, DMA capture and scheduled DSP/ARAM events run in the native harness. A reported register-restore fix enabled extended execution with 135,750 thread switches before the watchdog limit. However, both native and reference captures were silent without a connected Wii Remote. **Audible voice mixing has not been validated.**
+
+The next reported dependency is Wii Remote L2CAP/HID input emulation. Speaker playback, full graphics rendering and a playable game session remain unfinished.
 
 ## Graphics and output architecture
 
