@@ -16,7 +16,7 @@ I am developing an independent project to run *Metroid: Other M* natively on PC 
 
 ## Development status
 
-Native startup now reaches the audio DSP AX microcode-loading stage, after passing GXInit and exercising disc and Bluetooth services. I have not verified a rendered gameplay frame or produced a playable build.
+Native startup has now **passed AX audio DSP initialization** and continues to the development harness's watchdog limit without a reported crash. I have not produced a visible gameplay frame, audible game audio or a playable build.
 
 | Area | Latest documented evidence |
 | --- | --- |
@@ -25,9 +25,10 @@ Native startup now reaches the audio DSP AX microcode-loading stage, after passi
 | Wii runtime | Thread switching, special registers, interrupts, IOS, NAND, disc and Bluetooth startup exercised |
 | Graphics command processor | GXInit passed; 291 GX commands and 512 KiB FIFO matched Dolphin at the 35th IPC call |
 | Disc / RVZ | Integrated read-only RVZ reader; DOL, FST and sampled large-file reads matched reference data |
-| Current startup stop | Audio DSP AX microcode loading. Around 1,290 frames submitted to the emulated GPU, **none rendered to the screen** |
+| AX DSP audio | AX microcode processing, audio DMA, interrupts and WAV capture implemented; 73,903 command frames and 135,750 thread switches reported in a longer run | 
+| Latest execution | No reported crash up to the harness watchdog. The game may be waiting for an unconnected Wii Remote; **no image rendered and no audible game sound** |
 
-My latest **1 November 2026** console report describes these milestones. I have not independently reproduced the runtime tests for this public documentation update. Submitted GPU frames are not rendered gameplay images. The game is still not playable. See [build status](docs/BUILD_STATUS.md).
+My latest **1 November 2026** console report describes these milestones. I have not independently reproduced the runtime tests for this public documentation update. The native audio capture was silent over 239 seconds, and a 250-second Dolphin comparison was also silent without a connected Wii Remote. With no active voices, this is **not** a validation of audible mixing. Submitted GPU frames are not rendered gameplay images. The game is still not playable. See [build status](docs/BUILD_STATUS.md).
 
 ## How it works
 
