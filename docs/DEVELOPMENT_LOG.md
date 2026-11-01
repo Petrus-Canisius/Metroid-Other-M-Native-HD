@@ -4,7 +4,19 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
-## 2026-11-01: GXInit passed; DSP AX microcode is the next stop
+## 2026-11-01: AX DSP processing passed; extended native run reaches watchdog
+
+My subsequent Claude Code report states that the **AX Wii DSP microcode** is implemented at a high level, including command frames, audio voice processing, stereo DMA capture and scheduled DSP/ARAM interruptions. The implementation reuses Dolphin-derived code with notices retained. A new **context-switch correction** fixed a nonvolatile register guard that had overwritten registers after `OSLoadContext` restored a different fiber. The reported extended run completed **135,750 thread switches** and **73,903 audio command frames** before the configured watchdog cutoff, without a reported crash.
+
+The native WAV capture contained **239 seconds of silence**. Dolphin was also silent for **250 seconds** in the same configuration with no connected Wii Remote. No voice was active, so this is only a **weak consistency check**. Actual audio mixing, sound quality and sample equivalence remain unvalidated. No image was rendered, and the game is **not playable**.
+
+Regression checks reportedly retained **732/732 translator tests**, GX equivalence for **291 commands**, exact sampled RVZ reads and **223 differing bytes** at the 24 MiB / fourth IPC comparison. The 35th IPC memory difference was reported as **810 bytes**, versus 881 previously; these differences are **not resolved**.
+
+The next dependency is the emulated **Wii Remote L2CAP/HID stack**, using scripted inputs for the Dolphin reference comparison. HDR10, VRR, G-SYNC, FreeSync and ultrawide support are still documentation-only goals.
+
+**Evidence boundary:** all results come from the user-provided console transcript. I have not executed the build, compared its WAV files or independently validated the runtime in this documentation update.
+
+## 2026-11-01: GXInit passed; DSP AX microcode is the next stop (earlier milestone)
 
 My later Claude Code console report records native startup **passing GXInit** after implementing CPU-side GX gather-pipe, CP/PE registers, FIFO processing, command decoding and capture. At the 35th IPC call, **291 GX commands** and the **512 KiB FIFO** matched the Dolphin reference. An inspection tool supports private GX capture analysis. **No rendering stage is implemented**, so a command or frame submitted to the emulated GPU is not a picture on screen.
 
