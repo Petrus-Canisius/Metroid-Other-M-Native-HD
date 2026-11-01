@@ -58,6 +58,12 @@ Les éléments suivants sont des **objectifs**, pas des fonctionnalités disponi
 
 La [feuille de route](docs/ROADMAP.md) précise les dépendances. Aucune date de sortie ni configuration minimale n'ont été établies.
 
+## Lanceur et téléchargements
+
+**Le lanceur sera publié sur ce dépôt dans la section [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases).** Ce sera le point de téléchargement officiel lorsqu'il sera prêt. L'installation devra utiliser une copie personnelle de *Metroid: Other M*.
+
+Je développe ce projet sur mon temps libre. Sa réalisation pourra prendre beaucoup de temps et aucune date de sortie n'est annoncée. **Je reste déterminé à publier le lanceur ici.** Aucun lanceur ni jeu jouable n'est disponible pour le moment.
+
 ## Suivre le développement
 
 Le [journal](docs/DEVELOPMENT_LOG.md) présente les jalons vérifiés. La [FAQ](docs/FAQ.md) aborde les téléchargements, les copies du jeu et les contributions. Les mises à jour publiques suivent une [procédure de maintenance](docs/MAINTENANCE.md) avec revue manuelle. Les documents techniques détaillés sont en anglais.
