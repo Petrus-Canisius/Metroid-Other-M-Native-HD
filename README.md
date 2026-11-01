@@ -4,7 +4,7 @@
 
 *Unofficial fan artwork. Not an in-game screenshot.*
 
-An independent project aiming to run *Metroid: Other M* natively on PC through static recompilation of its Wii PowerPC code.
+I am developing an independent project to run *Metroid: Other M* natively on PC through static recompilation of its Wii PowerPC code.
 
 ![In Active Development](https://img.shields.io/badge/status-In%20Active%20Development-blue)
 ![Not Playable Yet](https://img.shields.io/badge/gameplay-Not%20Playable%20Yet-orange)
@@ -16,18 +16,18 @@ An independent project aiming to run *Metroid: Other M* natively on PC through s
 
 ## Development status
 
-Early Wii startup code runs in a native development harness. The project has not produced a verified gameplay frame or a playable build.
+Early Wii startup code runs in my native development harness. I have not yet verified a gameplay frame or produced a playable build.
 
 | Area | Latest documented evidence |
 | --- | --- |
 | PowerPC translation | 32,275 functions generated, with some speculative discovery |
 | Translator tests | 732 passed in the last inspected suite |
 | Native compilation | 30,045 functions compiled in an earlier generation |
-| Wii services | Interrupt and IOS work; a later developer log reports reading NAND `SYSCONF` |
+| Wii services | Interrupt and IOS work; my later project log reports reading NAND `SYSCONF` |
 | Scheduling | Native fibers under development; 55 polling loops identified for instrumentation |
 | Disc and rendering | Disc reads under investigation; no verified gameplay rendering |
 
-The latest NAND and wait-loop observations come from developer progress logs dated **1 November 2026**. They have not been independently reproduced for this documentation update. The numbers above are distinct milestones, not a game-completion percentage. See [build status](docs/BUILD_STATUS.md).
+The latest NAND and wait-loop observations come from my project logs dated **1 November 2026**. I have not independently reproduced them for this documentation update. The numbers above are distinct milestones, not a game-completion percentage. See [build status](docs/BUILD_STATUS.md).
 
 ## How it works
 
@@ -48,16 +48,16 @@ See the [roadmap](docs/ROADMAP.md) for dependencies and limitations.
 
 ## Launcher and downloads
 
-The planned launcher **will be distributed through this repository's [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases)** when it is ready. Players will need their own copy of *Metroid: Other M*. No download or release date is available yet.
+I **will publish the planned launcher through this repository's [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases)** when it is ready. Players will need their own copy of *Metroid: Other M*. No download or release date is available yet.
 
-I develop this project in my spare time. Progress may take considerable time, but my intention is to bring the launcher to this page.
+I develop this project in my spare time. Progress may take time, but I intend to publish the launcher here.
 
 ## Follow development
 
-Read the [development log](docs/DEVELOPMENT_LOG.md) for significant milestones and the [FAQ](docs/FAQ.md) for technical and distribution questions. Public updates are reviewed manually under the [documentation maintenance procedure](docs/MAINTENANCE.md).
+I record significant milestones in my [development log](docs/DEVELOPMENT_LOG.md) and answer technical and distribution questions in the [FAQ](docs/FAQ.md). I review public updates manually using my [documentation maintenance procedure](docs/MAINTENANCE.md).
 
 ## Independence and rights
 
-This is an unofficial fan project. It is not affiliated with, endorsed by or approved by Nintendo. Metroid and related names belong to their respective owners. This repository contains no Nintendo game code, game assets, disc images, private NAND data or encryption keys.
+I run this unofficial fan project independently of Nintendo, without its endorsement or approval. Metroid and related names belong to their respective owners. This repository contains no Nintendo game code, game assets, disc images, private NAND data or encryption keys.
 
 Third-party license considerations are covered in the [FAQ](docs/FAQ.md#licensing).

@@ -4,7 +4,7 @@
 
 **In Active Development · Not Playable Yet · No Public Release**
 
-Evidence reviewed on **1 November 2026**. This update combines previously reviewed build reports with a later developer console log. The newer observations are explicitly marked as reported rather than independently reproduced. No compilation or runtime test was executed for this public documentation update.
+I reviewed the available evidence on **1 November 2026**, combining earlier build reports with a more recent console log from my project. I identify the newer observations as reported rather than independently reproduced. I did not run a new build or runtime test for this documentation update.
 
 ## Evidence levels
 
@@ -19,8 +19,8 @@ Evidence reviewed on **1 November 2026**. This update combines previously review
 | Early Wii startup | First VI-access MEM1 comparison previously differed by four time-base bytes | No actual gameplay frame was rendered |
 | Interrupts and IPC | Early runs delivered external interrupts and exercised IOS communication | Wider scheduling and event-order correctness are unresolved |
 | Linux fibers | Implementation and one fiber reported in earlier run | No verified thread switch in the cited earlier run |
-| NAND / SYSCONF | Later 1 November developer log reports that `/shared2/sys/SYSCONF` was read and 31 interrupts were reached | Reported progress, not independently reproduced or fully reference-validated here |
-| Wait-loop instrumentation | Developer log reports discovery of 55 short polling loops and integration of safe points | Retranslation and Dolphin comparison were still running at the log cutoff |
+| NAND / SYSCONF | My later 1 November project log reports reading `/shared2/sys/SYSCONF` and reaching 31 interrupts | Reported progress, not independently reproduced or fully reference-validated here |
+| Wait-loop instrumentation | My project log reports the discovery of 55 short polling loops and work on safe-point integration | Retranslation and Dolphin comparison were still running at the log cutoff |
 | IOS disc interface | DI investigation and a file-backed read strategy were being developed | Complete disc reads and timing were not demonstrated |
 | Graphics, audio and gameplay | Architecture and product plans exist | No verified native gameplay rendering or playable build |
 
@@ -30,8 +30,8 @@ An earlier memory comparison around filesystem IPC reported **220 differing byte
 
 A prior boot trace also reported unsupported PowerPC special-register writes. Full processor-state fidelity has not been established.
 
-The recent log reports additional NAND and timing work, but its final operation was a concurrent retranslation and reference capture. This document does not infer those operations completed successfully.
+My recent log records further NAND and timing work, but ends while retranslation and reference capture are in progress. I do not claim those operations finished successfully.
 
 ## Public release status
 
-The repository contains documentation and a fan-made banner, not runtime source, translated game code, Nintendo assets or binaries. There is no game release or public installer. The launcher is planned for [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. Linux is the current development environment; Windows remains a target.
+I publish documentation and a fan-made banner here, not runtime source, translated game code, Nintendo assets or binaries. I have not released a game build or installer. I plan to publish the launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. Linux is the current development environment; Windows remains a target.

@@ -4,9 +4,9 @@
 
 ## Scope
 
-Codex maintains public presentation in a separate workspace. Claude Code continues technical development. Read the development project only. Never switch its branches, modify its files, compile it, stop processes or run its scripts during a documentation update.
+I maintain my public presentation in a separate workspace from the technical project. I use Codex to help with documentation and Claude Code to help with technical development. For a documentation update, the technical project must remain read-only: do not switch its branches, modify its files, compile it, stop processes or run its scripts.
 
-This procedure is manual. There is no scheduled publication, filesystem synchronization or workflow with access to the development directory.
+I review and publish updates manually. I have not enabled scheduled publication, filesystem synchronization or any documentation workflow with write access to my development directory.
 
 ## Review procedure
 

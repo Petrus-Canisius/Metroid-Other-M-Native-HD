@@ -2,17 +2,17 @@
 
 [Home](../README.md) · [Status](BUILD_STATUS.md) · [Update procedure](MAINTENANCE.md)
 
-This log records substantive milestones and the limits of their evidence. It does not reproduce raw game data or private diagnostic artifacts.
+I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
 ## 2026-11-01: NAND configuration and scheduling investigation
 
-A later developer console log reports that the native startup reached and read `/shared2/sys/SYSCONF` through a partial IOS filesystem proxy. It reports 31 delivered interrupts at that point.
+In a later console log from my project, I recorded native startup reaching and reading `/shared2/sys/SYSCONF` through a partial IOS filesystem proxy. The same log reports 31 delivered interrupts at that point.
 
-The developer also added a wait-loop analysis tool to identify short memory-polling loops whose progress depends on asynchronous hardware events. The tool reported **55 candidate loops**, including loops involved in DVD initialization. Safe-point integration was underway.
+I am using a wait-loop analysis tool to identify short memory-polling loops that depend on asynchronous hardware events. The tool reported **55 candidate loops**, including loops involved in DVD initialization. Safe-point integration was underway.
 
 The remaining work includes matching the native and Dolphin IPC capture points, validating asynchronous event delivery, and implementing the IOS disc interface. Retranslation and a reference capture were still running at the end of the available log.
 
-**Evidence boundary:** these are developer-reported observations from an in-progress session, not a fresh independent reproduction. They do not establish a working disc path, validated thread switches, native rendering or playability.
+**Evidence boundary:** these observations come from my in-progress project log, not from a new independent reproduction. They do not establish a working disc path, validated thread switches, native rendering or playability.
 
 ## 2026-11-01: Translation and early native startup
 
@@ -28,4 +28,4 @@ Initial DOL and REL parsing, relocation, integrity checks and function discovery
 
 ## Evidence policy
 
-Dates identify when an observation was reported. They do not imply a release schedule. The [build status](BUILD_STATUS.md) separates generated, compiled, executed and validated results. Public entries require a careful review before publication.
+Dates identify when an observation was reported. They do not imply a release schedule. The [build status](BUILD_STATUS.md) separates generated, compiled, executed and validated results. I review new entries carefully before publishing them.

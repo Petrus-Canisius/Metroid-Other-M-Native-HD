@@ -4,7 +4,7 @@
 
 *Illustration de fan non officielle. Il ne s'agit pas d'une capture du jeu.*
 
-Un projet indépendant visant à faire fonctionner *Metroid: Other M* nativement sur PC grâce à la recompilation statique du code PowerPC de la Wii.
+Je développe un projet indépendant visant à faire fonctionner *Metroid: Other M* nativement sur PC grâce à la recompilation statique du code PowerPC de la Wii.
 
 ![In Active Development](https://img.shields.io/badge/status-In%20Active%20Development-blue)
 ![Not Playable Yet](https://img.shields.io/badge/gameplay-Not%20Playable%20Yet-orange)
@@ -16,18 +16,18 @@ Un projet indépendant visant à faire fonctionner *Metroid: Other M* nativement
 
 ## État du développement
 
-Les premières étapes du démarrage Wii s'exécutent dans un banc de développement natif. Aucune image de gameplay native ni version jouable n'a encore été vérifiée.
+Les premières étapes du démarrage Wii s'exécutent dans mon environnement de développement natif. Je n'ai pas encore vérifié d'image de gameplay native ni obtenu de version jouable.
 
 | Domaine | Derniers éléments documentés |
 | --- | --- |
 | Traduction PowerPC | 32 275 fonctions générées, dont certaines issues d'une détection exploratoire |
 | Tests du traducteur | 732 tests réussis dans la dernière suite examinée |
 | Compilation native | 30 045 fonctions compilées dans une génération antérieure |
-| Services Wii | Interruptions et IOS ; un journal plus récent indique la lecture de `SYSCONF` depuis la NAND |
+| Services Wii | Interruptions et IOS ; mes dernières notes de travail indiquent la lecture de `SYSCONF` depuis la NAND |
 | Ordonnancement | Fibres natives en développement ; 55 boucles d'attente détectées pour instrumentation |
 | Disque et rendu | Lectures disque à l'étude ; aucun rendu de gameplay natif vérifié |
 
-Les dernières observations sur la NAND et les boucles d'attente proviennent des journaux de développement du **1er novembre 2026**. Elles n'ont pas fait l'objet d'une nouvelle reproduction indépendante lors de cette mise à jour. Ces chiffres représentent des jalons distincts, pas un pourcentage d'achèvement. Voir l'[état technique](docs/BUILD_STATUS.md).
+J'ai consigné les dernières observations sur la NAND et les boucles d'attente dans mes journaux du **1er novembre 2026**. Je ne les ai pas reproduites indépendamment lors de cette mise à jour. Ces chiffres représentent des jalons distincts, pas un pourcentage d'achèvement. Voir l'[état technique](docs/BUILD_STATUS.md).
 
 ## Principe technique
 
@@ -48,16 +48,16 @@ La [feuille de route](docs/ROADMAP.md) présente les étapes et leurs limites.
 
 ## Lanceur et téléchargements
 
-Le lanceur prévu **sera distribué sur ce dépôt via [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases)** lorsqu'il sera prêt. Les joueurs devront posséder leur propre copie de *Metroid: Other M*. Aucun téléchargement ni date de sortie ne sont annoncés pour le moment.
+Je **publierai le lanceur prévu sur ce dépôt via [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases)** lorsqu'il sera prêt. Les joueurs devront posséder leur propre copie de *Metroid: Other M*. Aucun téléchargement ni date de sortie ne sont annoncés pour le moment.
 
-Je développe ce projet sur mon temps libre. Sa réalisation pourra prendre beaucoup de temps, mais mon intention reste de publier le lanceur ici.
+Je développe ce projet sur mon temps libre. Le développement peut prendre du temps, mais je compte publier le lanceur ici.
 
 ## Suivre le développement
 
-Le [journal](docs/DEVELOPMENT_LOG.md) présente les jalons importants. La [FAQ](docs/FAQ.md) répond aux questions techniques et de distribution. Les actualisations publiques suivent une [procédure de maintenance](docs/MAINTENANCE.md) avec revue manuelle. La documentation technique détaillée est en anglais.
+Je présente les jalons importants dans mon [journal](docs/DEVELOPMENT_LOG.md) et je réponds aux questions techniques et de distribution dans la [FAQ](docs/FAQ.md). Je révise manuellement les informations publiques à l'aide de ma [procédure de maintenance](docs/MAINTENANCE.md). La documentation technique détaillée est en anglais.
 
 ## Indépendance et droits
 
-Il s'agit d'un projet de fan non officiel, ni affilié à Nintendo, ni soutenu ou approuvé par Nintendo. Metroid et les noms associés appartiennent à leurs détenteurs respectifs. Ce dépôt ne distribue aucun code de jeu Nintendo, ressource du jeu, image disque, donnée NAND privée ou clé de chiffrement.
+Je mène ce projet de fan de manière indépendante, sans affiliation, soutien ni approbation de Nintendo. Metroid et les noms associés appartiennent à leurs détenteurs respectifs. Ce dépôt ne distribue aucun code de jeu Nintendo, ressource du jeu, image disque, donnée NAND privée ou clé de chiffrement.
 
 La [FAQ](docs/FAQ.md#licensing) présente les questions relatives aux licences tierces.

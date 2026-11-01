@@ -2,7 +2,7 @@
 
 [Home](../README.md) · [Status](BUILD_STATUS.md) · [Development log](DEVELOPMENT_LOG.md)
 
-This roadmap groups work by technical dependency. It has no completion percentages or promised dates.
+I group my development work by technical dependency in this roadmap. I have not assigned completion percentages or promised release dates.
 
 | Phase | Scope | Position |
 | --- | --- | --- |
@@ -19,4 +19,4 @@ The intended targets include Windows and Linux, keyboard and mouse, Xbox and Pla
 
 Refresh rates up to 144 FPS are exploratory. Game timing and behavior must be preserved. Shader and pipeline preparation depends on the selected rendering backend. CPU, GPU, RAM and VRAM budgets will require measurements on representative PCs, including modest hardware.
 
-The launcher is intended to appear in this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) section when ready. Development takes place in spare time, so no release date is promised.
+I intend to publish the launcher in this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) section when ready. I develop the project in my spare time, and I have not set a release date.
