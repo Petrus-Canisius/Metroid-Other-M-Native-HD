@@ -16,7 +16,7 @@ Je développe un projet indépendant visant à faire fonctionner *Metroid: Other
 
 ## État du développement
 
-Le démarrage natif atteint désormais le chargement du microcode audio DSP AX, après avoir franchi GXInit et exercé les services disque et Bluetooth. Je n'ai pas encore obtenu d'image de gameplay affichée ni de version jouable.
+Le démarrage natif a désormais **franchi l'initialisation du DSP audio AX**. L'exécution se poursuit jusqu'à la limite du banc d'essai sans plantage signalé. Je n'ai encore obtenu ni image de gameplay affichée, ni son audible, ni version jouable.
 
 | Domaine | Derniers éléments documentés |
 | --- | --- |
@@ -25,9 +25,10 @@ Le démarrage natif atteint désormais le chargement du microcode audio DSP AX, 
 | Runtime Wii | Changements de thread, registres spéciaux, interruptions, IOS, NAND, disque et initialisation Bluetooth exercés |
 | Processeur graphique | GXInit franchi ; 291 commandes GX et 512 Kio de FIFO identiques à Dolphin au 35ᵉ appel IPC |
 | Lecteur RVZ | Lecteur intégré en lecture seule ; vérifications du DOL, de la FST et d'extraits d'un grand fichier |
-| Blocage actuel | Chargement du microcode audio DSP AX. Environ 1 290 images soumises au GPU émulé, **aucune affichée à l'écran** |
+| Audio DSP AX | Microcode AX, DMA audio, interruptions et capture WAV implémentés ; 73 903 trames de commandes et 135 750 changements de thread rapportés sur un essai prolongé |
+| État actuel | Pas de plantage signalé avant la limite du banc. Le jeu pourrait attendre une Wiimote absente ; **aucune image affichée et aucun son audible** |
 
-Mon dernier compte rendu de console du **1er novembre 2026** décrit ces jalons. Je n'ai pas reproduit indépendamment les tests du runtime pour cette mise à jour publique. Une image soumise au GPU n'est pas une image de gameplay affichée. Le jeu n'est toujours pas jouable. Voir l'[état technique](docs/BUILD_STATUS.md).
+Mon dernier compte rendu de console du **1er novembre 2026** décrit ces jalons. Je n'ai pas reproduit indépendamment les tests du runtime pour cette mise à jour publique. La capture audio native est silencieuse sur 239 secondes, comme celle de Dolphin sur 250 secondes sans Wiimote connectée. Aucune voix n'étant active, cela **ne valide pas encore le mixage d'un son réel**. Une image soumise au GPU n'est pas une image affichée. Le jeu n'est toujours pas jouable. Voir l'[état technique](docs/BUILD_STATUS.md).
 
 ## Principe technique
 
