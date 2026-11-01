@@ -4,35 +4,34 @@
 
 **In Active Development · Not Playable Yet · No Public Release**
 
-Evidence reviewed on 1 November 2026. This is a read only review of existing source, reports and logs. No compilation or test execution was started for this documentation update.
+Evidence reviewed on **1 November 2026**. This update combines previously reviewed build reports with a later developer console log. The newer observations are explicitly marked as reported rather than independently reproduced. No compilation or runtime test was executed for this public documentation update.
 
 ## Evidence levels
 
-Generated means the translator emitted code. Compiled means that code produced native objects. Executed means a path ran in the harness. Validated means a specific comparison passed within stated limits. Playable requires a tested game experience. These levels are not interchangeable.
+**Generated** means translation output exists. **Compiled** means native objects were produced. **Executed** means a path ran in the harness. **Validated** means a specific comparison passed within stated limits. **Playable** requires a tested game experience. These levels are not interchangeable.
 
-| Area | Evidence | Limit |
+| Area | Evidence | Limitation |
 | --- | --- | --- |
-| Latest translation | Completed log: 32,275 functions | Includes speculative function discovery. Does not prove complete game coverage |
-| Translator suite | Existing run: 732 passed, 0 failed, 0 skipped | Translator tests, not 732 gameplay tests |
-| Full native object compilation | Existing summary: 30,045 objects, 0 failures | Earlier generation. No equivalent complete result established for 32,275 functions |
-| REL linking | Documented exact comparison with Dolphin, 8,017,604 bytes | Module linkage, not full execution correctness |
-| Startup to first VI access | Existing MEM1 difference report: four bytes | Time base difference documented. No rendered frame is established |
-| Interrupts and STM | Execution reports and runtime implementation | Early startup scope only |
-| Linux fibers | Implementation present and harness reports one fiber | Inspected run reports zero thread switches. Multi-thread correctness is not established |
-| NAND filesystem | Partial host file implementation present | Inspected execution log predates that implementation and stops at filesystem open |
-| SYSCONF | Configuration service startup appears in the log | Successful SYSCONF file reading was not established by the inspected evidence |
-| Wait loops | Analysis tool and scheduling integration present | Full coverage and correctness remain to be validated |
-| Disc access | DI registers and IOS device skeleton present | IOS disc commands explicitly unimplemented |
-| Graphics, audio and controls | Plans and architecture work | No verified playable integration |
+| PowerPC translation | Completed log: 32,275 generated functions | Some discovery is speculative; not complete-game proof |
+| Translator suite | Existing report: 732 passed, 0 failed, 0 skipped | Translator tests, not gameplay tests |
+| Native object compilation | Earlier completed report: 30,045 objects, no failures | No matching full-build report verified for 32,275 functions |
+| REL linking | Previously documented comparison with Dolphin: 8,017,604 bytes | Module linkage does not prove runtime correctness |
+| Early Wii startup | First VI-access MEM1 comparison previously differed by four time-base bytes | No actual gameplay frame was rendered |
+| Interrupts and IPC | Early runs delivered external interrupts and exercised IOS communication | Wider scheduling and event-order correctness are unresolved |
+| Linux fibers | Implementation and one fiber reported in earlier run | No verified thread switch in the cited earlier run |
+| NAND / SYSCONF | Later 1 November developer log reports that `/shared2/sys/SYSCONF` was read and 31 interrupts were reached | Reported progress, not independently reproduced or fully reference-validated here |
+| Wait-loop instrumentation | Developer log reports discovery of 55 short polling loops and integration of safe points | Retranslation and Dolphin comparison were still running at the log cutoff |
+| IOS disc interface | DI investigation and a file-backed read strategy were being developed | Complete disc reads and timing were not demonstrated |
+| Graphics, audio and gameplay | Architecture and product plans exist | No verified native gameplay rendering or playable build |
 
-## Unresolved observations
+## Open validation questions
 
-A later memory comparison at filesystem open reports **220 differing bytes**. Their causes are not resolved in the inspected evidence. The earlier first VI comparison must not be generalized to this later point.
+An earlier memory comparison around filesystem IPC reported **220 differing bytes**. Later debugging identified a problem in aligning the reference capture points. That comparison cannot establish a valid state divergence until both sides are captured at equivalent execution points.
 
-The inspected boot log also reports unhandled special register writes defaulting to zero. Full CPU state fidelity is not established.
+A prior boot trace also reported unsupported PowerPC special-register writes. Full processor-state fidelity has not been established.
 
-Some local summaries retain historical statements that conflict with newer sections or artifacts. This page uses the completed translation log for the latest generation count and keeps the older compilation result separate. Current filesystem source is newer than the inspected filesystem open run. Its existence is not proof of successful execution.
+The recent log reports additional NAND and timing work, but its final operation was a concurrent retranslation and reference capture. This document does not infer those operations completed successfully.
 
-## Public build availability
+## Public release status
 
-This documentation repository contains no runtime source, generated translation, game data or binaries. There are no public build instructions or game releases. Windows remains a target. The inspected fiber implementation is Linux specific.
+The repository contains documentation and a fan-made banner, not runtime source, translated game code, Nintendo assets or binaries. There is no game release or public installer. The launcher is planned for [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. Linux is the current development environment; Windows remains a target.

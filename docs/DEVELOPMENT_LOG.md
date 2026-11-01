@@ -2,22 +2,30 @@
 
 [Home](../README.md) · [Status](BUILD_STATUS.md) · [Update procedure](MAINTENANCE.md)
 
-This log summarizes reviewed milestones. It contains no raw game output, private data or automatic activity entries.
+This log records substantive milestones and the limits of their evidence. It does not reproduce raw game data or private diagnostic artifacts.
+
+## 2026-11-01: NAND configuration and scheduling investigation
+
+A later developer console log reports that the native startup reached and read `/shared2/sys/SYSCONF` through a partial IOS filesystem proxy. It reports 31 delivered interrupts at that point.
+
+The developer also added a wait-loop analysis tool to identify short memory-polling loops whose progress depends on asynchronous hardware events. The tool reported **55 candidate loops**, including loops involved in DVD initialization. Safe-point integration was underway.
+
+The remaining work includes matching the native and Dolphin IPC capture points, validating asynchronous event delivery, and implementing the IOS disc interface. Retranslation and a reference capture were still running at the end of the available log.
+
+**Evidence boundary:** these are developer-reported observations from an in-progress session, not a fresh independent reproduction. They do not establish a working disc path, validated thread switches, native rendering or playability.
 
 ## 2026-11-01: Translation and early native startup
 
-The latest completed translation log reports 32,275 functions. The accompanying translator run reports 732 passing tests, with no failures or skipped tests. A previous generation of 30,045 functions has a complete successful native object compilation report. The newer generation is not presented as fully compiled on that basis.
+The completed translation log reports **32,275 generated functions** and **732 passing translator tests**. An earlier generation has a successful native object compilation report for **30,045 functions**. The completed-build result must not be transferred to the newer generation.
 
-Native startup has been exercised through early Wii service initialization. Interrupt delivery, event scheduling and IOS STM communication are implemented and have execution evidence. MEM1 comparison at the first VI access differs in four time base bytes, as described in the local validation notes.
+Early Wii startup, interrupts, event scheduling and IOS communication have been exercised. At the first VI access, a previous MEM1 comparison with Dolphin differed in four time-base bytes.
 
-Further work includes Linux fibers, a partial NAND filesystem and wait loop analysis. The inspected filesystem open run reports one fiber and zero thread switches. A later memory comparison at that point has 220 differing bytes whose causes remain unresolved in the reviewed evidence. IOS disc commands are still unimplemented.
-
-The rendering backend remains open. No native gameplay frame or playable build is verified.
+An earlier filesystem IPC comparison reported 220 different memory bytes. Subsequent debugging found that the reference snapshots may have been taken at different points in the IPC sequence. The mismatch is therefore not yet a validated divergence.
 
 ## 2026-10-31: Executable analysis foundation
 
-Initial DOL and REL parsing, relocation and integrity checks were documented. Analysis tools and tests established the foundation for function discovery and static translation.
+Initial DOL and REL parsing, relocation, integrity checks and function discovery established the basis for static translation.
 
 ## Evidence policy
 
-Dates refer to the recorded milestone, not a promise of continuous publication. Each entry must distinguish implementation, execution and validation. Detailed evidence scope belongs in [build status](BUILD_STATUS.md). New entries follow the [maintenance procedure](MAINTENANCE.md).
+Dates identify when an observation was reported. They do not imply a release schedule. The [build status](BUILD_STATUS.md) separates generated, compiled, executed and validated results. Public entries require a careful review before publication.

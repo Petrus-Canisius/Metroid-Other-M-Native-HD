@@ -4,7 +4,7 @@
 
 *Illustration de fan non officielle. Il ne s'agit pas d'une capture du jeu.*
 
-Un projet indépendant et expérimental pour exécuter Metroid: Other M nativement sur PC par recompilation statique du code PowerPC de la Wii.
+Un projet indépendant visant à faire fonctionner *Metroid: Other M* nativement sur PC grâce à la recompilation statique du code PowerPC de la Wii.
 
 ![In Active Development](https://img.shields.io/badge/status-In%20Active%20Development-blue)
 ![Not Playable Yet](https://img.shields.io/badge/gameplay-Not%20Playable%20Yet-orange)
@@ -14,62 +14,50 @@ Un projet indépendant et expérimental pour exécuter Metroid: Other M nativeme
 
 [Architecture](docs/ARCHITECTURE.md) · [État technique](docs/BUILD_STATUS.md) · [Feuille de route](docs/ROADMAP.md) · [Journal](docs/DEVELOPMENT_LOG.md) · [FAQ](docs/FAQ.md)
 
-## État actuel
+## État du développement
 
-**In Active Development · Not Playable Yet · No Public Release**
+Les premières étapes du démarrage Wii s'exécutent dans un banc de développement natif. Aucune image de gameplay native ni version jouable n'a encore été vérifiée.
 
-Le début du démarrage s'exécute nativement dans un banc de développement. Aucune version jouable ni aucun téléchargement public ne sont disponibles. Ce dépôt documente le projet. Il ne contient ni les sources de développement ni les données du jeu.
-
-Éléments examinés le **1er novembre 2026** :
-
-| Domaine | État vérifié |
+| Domaine | Derniers éléments documentés |
 | --- | --- |
-| Traduction PowerPC | Le dernier journal consulté indique 32 275 fonctions traduites |
-| Tests du traducteur | Le dernier essai consulté indique 732 réussites, aucun échec ni test ignoré |
-| Compilation native | Génération antérieure : 30 045 fonctions compilées avec succès |
-| Validation du démarrage | MEM1 comparée à Dolphin au premier accès VI, avec quatre octets de base de temps différents |
-| Interruptions et IOS | Délivrance initiale des interruptions et communication STM exercées |
-| Threads et NAND | Implémentations partielles présentes, validation plus large à poursuivre |
-| Accès disque | Commandes disque IOS encore non implémentées dans le code examiné |
-| Rendu et gameplay | Aucun rendu natif du jeu vérifié ni version jouable |
+| Traduction PowerPC | 32 275 fonctions générées, dont certaines issues d'une détection exploratoire |
+| Tests du traducteur | 732 tests réussis dans la dernière suite examinée |
+| Compilation native | 30 045 fonctions compilées dans une génération antérieure |
+| Services Wii | Interruptions et IOS ; un journal plus récent indique la lecture de `SYSCONF` depuis la NAND |
+| Ordonnancement | Fibres natives en développement ; 55 boucles d'attente détectées pour instrumentation |
+| Disque et rendu | Lectures disque à l'étude ; aucun rendu de gameplay natif vérifié |
 
-Ces jalons sont distincts. Le nombre de fonctions traduites ne mesure pas l'achèvement du jeu. L'[état technique](docs/BUILD_STATUS.md) précise les limites des preuves et les écarts non résolus.
+Les dernières observations sur la NAND et les boucles d'attente proviennent des journaux de développement du **1er novembre 2026**. Elles n'ont pas fait l'objet d'une nouvelle reproduction indépendante lors de cette mise à jour. Ces chiffres représentent des jalons distincts, pas un pourcentage d'achèvement. Voir l'[état technique](docs/BUILD_STATUS.md).
 
-## Principe de la recompilation native
+## Principe technique
 
-La chaîne de développement traduit les instructions PowerPC en C++, puis compile ce code pour le processeur du PC. Un runtime dédié fournit les services Wii, la gestion de la mémoire et les interfaces matérielles.
+La chaîne de développement traduit les instructions PowerPC de la Wii en C++, puis les compile pour le processeur du PC. Un runtime dédié prend en charge la mémoire, les interfaces matérielles et les services système Wii.
 
-Le projet n'est pas un lanceur Dolphin. Dolphin sert de référence de développement pour comparer le comportement et la mémoire. L'exécution native exige encore un travail de compatibilité avec le matériel Wii, notamment pour les graphismes, l'audio, le stockage et les entrées.
-
-La base technique comprend des outils d'analyse C++20, des parseurs DOL et REL, la relocation statique, un traducteur WiiCompiled adapté et un runtime Other M. Le backend graphique reste à choisir.
+Ce projet **n'est pas un lanceur Dolphin**. Dolphin sert de référence pour les comparaisons de comportement et de mémoire. Le choix du backend graphique reste ouvert entre Aurora/Dawn et une éventuelle implémentation Vulkan directe.
 
 ## Fonctionnalités prévues
 
-Les éléments suivants sont des **objectifs**, pas des fonctionnalités disponibles :
+Il s'agit d'objectifs, pas de fonctionnalités déjà disponibles.
 
-- Exécution native sous Windows et Linux.
-- Affichage en 1080p, 1440p et 4K, avec améliorations graphiques HD.
-- Fréquences élevées jusqu'à 144 FPS si cela est techniquement réalisable.
-- Clavier et souris, manettes Xbox et PlayStation.
-- Support futur de la Wiimote avec la Mayflash DolphinBar.
-- Optimisation CPU, GPU, RAM et VRAM, avec tests sur des PC modestes.
-- Précompilation des shaders et comparaisons graphiques automatisées.
-- Installation depuis une copie personnelle du jeu, lanceur et mises à jour.
+- **Systèmes et commandes :** Windows et Linux, clavier et souris, manettes Xbox et PlayStation, puis Wiimote via Mayflash DolphinBar.
+- **Graphismes :** affichage 1080p, 1440p et 4K, améliorations HD facultatives et fréquences pouvant atteindre 144 FPS si cela est techniquement réalisable.
+- **Optimisation :** maîtrise du CPU, du GPU, de la RAM et de la VRAM, compatibilité avec les PC modestes, préparation des shaders et tests automatisés.
+- **Installation :** importation locale d'une copie personnelle du jeu, lanceur dédié et futur système de mises à jour.
 
-La [feuille de route](docs/ROADMAP.md) précise les dépendances. Aucune date de sortie ni configuration minimale n'ont été établies.
+La [feuille de route](docs/ROADMAP.md) présente les étapes et leurs limites.
 
 ## Lanceur et téléchargements
 
-**Le lanceur sera publié sur ce dépôt dans la section [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases).** Ce sera le point de téléchargement officiel lorsqu'il sera prêt. L'installation devra utiliser une copie personnelle de *Metroid: Other M*.
+Le lanceur prévu **sera distribué sur ce dépôt via [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases)** lorsqu'il sera prêt. Les joueurs devront posséder leur propre copie de *Metroid: Other M*. Aucun téléchargement ni date de sortie ne sont annoncés pour le moment.
 
-Je développe ce projet sur mon temps libre. Sa réalisation pourra prendre beaucoup de temps et aucune date de sortie n'est annoncée. **Je reste déterminé à publier le lanceur ici.** Aucun lanceur ni jeu jouable n'est disponible pour le moment.
+Je développe ce projet sur mon temps libre. Sa réalisation pourra prendre beaucoup de temps, mais mon intention reste de publier le lanceur ici.
 
 ## Suivre le développement
 
-Le [journal](docs/DEVELOPMENT_LOG.md) présente les jalons vérifiés. La [FAQ](docs/FAQ.md) aborde les téléchargements, les copies du jeu et les contributions. Les mises à jour publiques suivent une [procédure de maintenance](docs/MAINTENANCE.md) avec revue manuelle. Les documents techniques détaillés sont en anglais.
+Le [journal](docs/DEVELOPMENT_LOG.md) présente les jalons importants. La [FAQ](docs/FAQ.md) répond aux questions techniques et de distribution. Les actualisations publiques suivent une [procédure de maintenance](docs/MAINTENANCE.md) avec revue manuelle. La documentation technique détaillée est en anglais.
 
 ## Indépendance et droits
 
-Ce projet n'est ni affilié à Nintendo, ni approuvé ou soutenu par Nintendo. Metroid et les noms associés appartiennent à leurs détenteurs respectifs. Aucun code de jeu Nintendo, ressource, image disque, clé ou donnée NAND privée n'est distribué ici.
+Il s'agit d'un projet de fan non officiel, ni affilié à Nintendo, ni soutenu ou approuvé par Nintendo. Metroid et les noms associés appartiennent à leurs détenteurs respectifs. Ce dépôt ne distribue aucun code de jeu Nintendo, ressource du jeu, image disque, donnée NAND privée ou clé de chiffrement.
 
-La [FAQ](docs/FAQ.md#licensing) précise les licences tierces et les conditions d'une éventuelle publication des sources.
+La [FAQ](docs/FAQ.md#licensing) présente les questions relatives aux licences tierces.
