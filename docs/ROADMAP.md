@@ -10,7 +10,7 @@ I group my development work by technical dependency in this roadmap. I have not 
 | **2. Wii runtime** | Memory, interrupts, IOS, NAND, host fibers and event scheduling | Active development. SYSCONF read reported; scheduling still under validation |
 | **3. Engine startup** | Complete IOS disc access, reliable thread changes and entry into the game engine | Not yet demonstrated |
 | **4. Graphics, audio and gameplay** | GX renderer, Aurora/Dawn versus direct Vulkan evaluation, audio, controls, scenes and saves | Planned |
-| **5. HD quality and performance** | HD graphics, resolution and refresh-rate testing, PC optimization, shader preparation and automated coverage | Planned; depends on a working game |
+| **5. HD quality and performance** | HD graphics, 16:9 widescreen and 21:9 ultrawide support with field-of-view and interface validation, resolution and refresh-rate testing, PC optimization, shader preparation and automated coverage | Planned; no native widescreen or ultrawide rendering validated |
 | **6. Installation and release** | Local import from a personal game copy, Windows/Linux builds, launcher, updater and GitHub Releases | Planned |
 
 ## Planned capabilities
