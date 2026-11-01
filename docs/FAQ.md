@@ -12,7 +12,7 @@ No. The project translates Wii PowerPC code ahead of time and compiles it for a 
 
 ## Does translating 32,275 functions mean the game works?
 
-No. Translation, compilation, execution and validation are separate milestones. My latest report includes GX command/FIFO comparisons and a longer startup run through GXInit, but does not establish rendered frames or playable gameplay. Some function discovery is speculative.
+No. Translation, compilation, execution and validation are separate milestones. My latest report includes GX command/FIFO comparisons and extended execution through DSP AX initialization up to the test watchdog, but does not establish rendered frames, audible game audio or playable gameplay. Some function discovery is speculative.
 
 ## Will I need the original game?
 
@@ -25,6 +25,10 @@ My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currentl
 ## What does "1,290 frames submitted" mean?
 
 The native harness reportedly submitted about 1,290 frames to the emulated GPU, but it currently has **no rendering backend**. No visible native game image has been produced and the game is not playable.
+
+## Is sound working now?
+
+I have implemented and exercised an AX Wii audio DSP path, DMA handling and WAV capture. The native run recorded silence for 239 seconds; Dolphin was also silent for 250 seconds without a connected Wii Remote. Because no voice was active, this does **not** yet validate actual sound mixing or playback. Audible output is still unproven.
 
 ## When will it release?
 
@@ -42,7 +46,7 @@ The inspected WiiCompiled license is GNU GPL version 3. Its third party notices 
 
 Dolphin's [licensing notice](https://github.com/dolphin-emu/dolphin/blob/master/COPYING) describes most original code as GPL version 2 or later, with per-file licenses and an aggregate compatible with GPL version 3. Local filesystem and disc runtime files explicitly identify Dolphin derived work. Using Dolphin as an external reference does not remove obligations for code actually ported from it.
 
-Before any runtime source or binary distribution, review the exact revisions, per-file licenses, copyright notices and dependency inventory. Preserve required notices and license texts. Distribution of GPL covered binaries requires the corresponding source and other applicable GPL conditions to be fulfilled. This documentation review is not a completed distribution compliance audit. Consult the [GNU GPL version 3 text](https://www.gnu.org/licenses/gpl-3.0.html) for its terms.
+My latest private documentation inventory reports additional Dolphin-derived AX DSP code and BSD-licensed zstd components. That inventory is an implementation report, not a completed legal assessment. Before any runtime source or binary distribution, review the exact revisions, per-file licenses, copyright notices and dependency inventory. Preserve required notices and license texts. Distribution of GPL covered binaries requires the corresponding source and other applicable GPL conditions to be fulfilled. This documentation review is not a completed distribution compliance audit. Consult the [GNU GPL version 3 text](https://www.gnu.org/licenses/gpl-3.0.html) for its terms.
 
 The inspected architecture record excludes NWiiRecomp code because of additional noncommercial and royalty restrictions. No such code should be imported through public documentation work.
 
