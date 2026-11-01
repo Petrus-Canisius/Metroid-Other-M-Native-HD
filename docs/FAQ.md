@@ -20,7 +20,7 @@ The installation goal requires a personal copy of the game. This repository prov
 
 ## Which platforms and features are supported?
 
-My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are planned, but none is available yet. I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
+My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. I plan to support 16:9 widescreen and 21:9 ultrawide displays with properly adapted visuals rather than stretching the image. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are also planned. None of these display or gameplay features has been validated yet, and I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
 
 ## When will it release?
 
