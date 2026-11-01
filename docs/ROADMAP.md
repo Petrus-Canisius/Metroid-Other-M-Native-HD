@@ -8,15 +8,15 @@ I organize development by technical dependencies, without assigning overall comp
 | --- | --- | --- |
 | **1. Recompilation foundation** | DOL/REL analysis, static relocation, function discovery and PowerPC-to-C++ translation | 32,275 functions retranslated; 732 translator tests passed in the reported run. Coverage and correctness remain ongoing |
 | **2. Wii runtime** | Memory, SPR, interrupts, IOS, NAND, fibers, Bluetooth and disc services | Active; significant paths exercised. Memory and timing mismatches remain under investigation |
-| **3. Engine startup** | Reliable threading, IOS disc reads, GX command processing, DSP initialization and entry into further engine execution | **GXInit passed**; disc and Bluetooth initialization exercised; currently stopped at AX DSP microcode loading |
-| **4. Graphics, audio and gameplay** | DSP AX handling, actual GX rendering, audio output, input, scenes and saves | DSP AX is the next task. GPU command submissions are observed, but no pixels are rendered |
+| **3. Engine startup** | Reliable threading, IOS disc reads, GX command processing, DSP initialization and entry into further engine execution | **GXInit passed**; disc and Bluetooth initialization exercised; AX DSP microcode now passed; extended run reaches watchdog limit, apparently waiting for a Wii Remote |
+| **4. Graphics, audio and gameplay** | DSP AX handling, actual GX rendering, audio output, input, scenes and saves | AX command processing and audio DMA exercised, but only silence captured with no active voices. Wii Remote L2CAP/HID is next; still no visible pixels or playable game |
 | **5. HD quality and performance** | HDR10, VRR, 16:9 and 21:9, HD/4K output, frame pacing, shader preparation, optimization and regression coverage | Planned only. All advanced display modes must be optional with SDR fallback |
 | **6. Installation and release** | Local import from personal game copy, Windows/Linux builds, launcher, updates and GitHub Releases | Planned; no public release |
 
 ## Technical sequence
 
-1. Implement the AX audio DSP behavior sufficiently to advance the native boot, starting with a testable audio buffer.
-2. Continue Wii Remote L2CAP/HID, exceptional-case and disc timing work as dependencies require.
+1. Implement and compare Wii Remote L2CAP/HID, memory and input reports using scripted controller events against Dolphin.
+2. Validate real AX audio voices and output as soon as a reproducible sound-producing state is reached. Continue timing and memory-fidelity work as needed.
 3. Build and validate a native graphics rendering stage. First achieve reliable SDR output.
 4. Design and validate widescreen/ultrawide, HDR and adaptive synchronization through the selected backend. Test VRR behavior on actual hardware.
 5. Complete a usable gameplay path before packaging and releasing the launcher.
