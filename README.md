@@ -58,6 +58,12 @@ The following are **goals**, not available features:
 
 The [roadmap](docs/ROADMAP.md) explains dependencies. No release date or minimum hardware requirements have been established.
 
+## Launcher and downloads
+
+**The launcher will be published on this repository through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases).** This will be the official download location when the launcher is ready. Installation is intended to use the player's own copy of *Metroid: Other M*.
+
+I work on this personal project in my spare time. Development may take a long time, and there is no announced release date. **I remain committed to releasing the launcher here.** No launcher or playable build is available yet.
+
 ## Follow development
 
 The [development log](docs/DEVELOPMENT_LOG.md) records verified milestones. The [FAQ](docs/FAQ.md) covers downloads, game copies and contributions. Public updates are reviewed manually using the [maintenance procedure](docs/MAINTENANCE.md).
