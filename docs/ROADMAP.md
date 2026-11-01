@@ -2,21 +2,29 @@
 
 [Home](../README.md) · [Status](BUILD_STATUS.md) · [Development log](DEVELOPMENT_LOG.md)
 
-I group my development work by technical dependency in this roadmap. I have not assigned completion percentages or promised release dates.
+I organize development by technical dependencies, without assigning overall completion percentages or release dates.
 
-| Phase | Scope | Position |
+| Phase | Scope | Current position |
 | --- | --- | --- |
-| **1. Recompilation foundation** | DOL/REL analysis, relocation, function discovery and PowerPC-to-C++ translation | Early milestones verified; coverage continues |
-| **2. Wii runtime** | Memory, interrupts, IOS, NAND, host fibers and event scheduling | Active development. SYSCONF read reported; scheduling still under validation |
-| **3. Engine startup** | Complete IOS disc access, reliable thread changes and entry into the game engine | Not yet demonstrated |
-| **4. Graphics, audio and gameplay** | GX renderer, Aurora/Dawn versus direct Vulkan evaluation, audio, controls, scenes and saves | Planned |
-| **5. HD quality and performance** | HD graphics, 16:9 widescreen and 21:9 ultrawide support with field-of-view and interface validation, resolution and refresh-rate testing, PC optimization, shader preparation and automated coverage | Planned; no native widescreen or ultrawide rendering validated |
-| **6. Installation and release** | Local import from a personal game copy, Windows/Linux builds, launcher, updater and GitHub Releases | Planned |
+| **1. Recompilation foundation** | DOL/REL analysis, static relocation, function discovery and PowerPC-to-C++ translation | 32,275 functions retranslated; 732 translator tests passed in the reported run. Coverage and correctness remain ongoing |
+| **2. Wii runtime** | Memory, SPR, interrupts, IOS, NAND, fibers, Bluetooth and disc services | Active; significant paths exercised. Memory and timing mismatches remain under investigation |
+| **3. Engine startup** | Reliable threading, IOS disc reads, GX command processing, DSP initialization and entry into further engine execution | **GXInit passed**; disc and Bluetooth initialization exercised; currently stopped at AX DSP microcode loading |
+| **4. Graphics, audio and gameplay** | DSP AX handling, actual GX rendering, audio output, input, scenes and saves | DSP AX is the next task. GPU command submissions are observed, but no pixels are rendered |
+| **5. HD quality and performance** | HDR10, VRR, 16:9 and 21:9, HD/4K output, frame pacing, shader preparation, optimization and regression coverage | Planned only. All advanced display modes must be optional with SDR fallback |
+| **6. Installation and release** | Local import from personal game copy, Windows/Linux builds, launcher, updates and GitHub Releases | Planned; no public release |
+
+## Technical sequence
+
+1. Implement the AX audio DSP behavior sufficiently to advance the native boot, starting with a testable audio buffer.
+2. Continue Wii Remote L2CAP/HID, exceptional-case and disc timing work as dependencies require.
+3. Build and validate a native graphics rendering stage. First achieve reliable SDR output.
+4. Design and validate widescreen/ultrawide, HDR and adaptive synchronization through the selected backend. Test VRR behavior on actual hardware.
+5. Complete a usable gameplay path before packaging and releasing the launcher.
 
 ## Planned capabilities
 
-The intended targets include Windows and Linux, keyboard and mouse, Xbox and PlayStation controllers, optional Wii Remote support using Mayflash DolphinBar, and output at 1080p, 1440p or 4K.
+I target Windows and Linux, keyboard and mouse, Xbox and PlayStation controllers and optional Wii Remote connectivity via Mayflash DolphinBar. Display goals include 1080p, 1440p, 4K, 16:9 and 21:9. HDR10, VRR, NVIDIA G-SYNC and AMD FreeSync are **optional plans**, dependent on supported GPUs, drivers, monitors and operating systems. Standard SDR 60 Hz 16:9 output must remain available.
 
-Refresh rates up to 144 FPS are exploratory. Game timing and behavior must be preserved. Shader and pipeline preparation depends on the selected rendering backend. CPU, GPU, RAM and VRAM budgets will require measurements on representative PCs, including modest hardware.
+Higher frame rates, possibly up to 144 FPS, require game timing validation and may not be feasible for every scene. Hardware requirements and release dates remain undetermined.
 
-I intend to publish the launcher in this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) section when ready. I develop the project in my spare time, and I have not set a release date.
+I plan to publish the launcher through this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. I develop this project in my spare time.
