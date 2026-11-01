@@ -40,7 +40,7 @@ Ce projet **n'est pas un lanceur Dolphin**. Dolphin sert de référence pour les
 Il s'agit d'objectifs, pas de fonctionnalités déjà disponibles.
 
 - **Systèmes et commandes :** Windows et Linux, clavier et souris, manettes Xbox et PlayStation, puis Wiimote via Mayflash DolphinBar.
-- **Graphismes :** affichage 1080p, 1440p et 4K, améliorations HD facultatives et fréquences pouvant atteindre 144 FPS si cela est techniquement réalisable.
+- **Graphismes :** prise en charge prévue des formats 16:9 (écran large) et 21:9 (ultrawide), avec un champ de vision adapté plutôt qu'une image étirée ; affichage 1080p, 1440p et 4K, améliorations HD facultatives et fréquences pouvant atteindre 144 FPS si cela est techniquement réalisable. Ces modes d'affichage ne sont pas encore implémentés ni validés.
 - **Optimisation :** maîtrise du CPU, du GPU, de la RAM et de la VRAM, compatibilité avec les PC modestes, préparation des shaders et tests automatisés.
 - **Installation :** importation locale d'une copie personnelle du jeu, lanceur dédié et futur système de mises à jour.
 
