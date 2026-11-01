@@ -1,37 +1,42 @@
 # Build status
 
-[Home](../README.md) · [Development log](DEVELOPMENT_LOG.md)
+[Home](../README.md) · [Development log](DEVELOPMENT_LOG.md) · [Roadmap](ROADMAP.md)
 
 **In Active Development · Not Playable Yet · No Public Release**
 
-I reviewed the available evidence on **1 November 2026**, combining earlier build reports with a more recent console log from my project. I identify the newer observations as reported rather than independently reproduced. I did not run a new build or runtime test for this documentation update.
+I updated this page from my **1 November 2026 Claude Code console report**. Its reported builds and comparisons have not been independently reproduced for this documentation update. I have not performed a new runtime test here.
 
 ## Evidence levels
 
-**Generated** means translation output exists. **Compiled** means native objects were produced. **Executed** means a path ran in the harness. **Validated** means a specific comparison passed within stated limits. **Playable** requires a tested game experience. These levels are not interchangeable.
+**Generated** means translation output exists. **Compiled** means native objects were built. **Executed** means code ran in the native development harness. **Validated** means a specific test or comparison passed within its stated limits. **Playable** requires a tested interactive game session. These stages are not interchangeable.
 
-| Area | Evidence | Limitation |
+| Area | Latest reported result | Limit |
 | --- | --- | --- |
-| PowerPC translation | Completed log: 32,275 generated functions | Some discovery is speculative; not complete-game proof |
-| Translator suite | Existing report: 732 passed, 0 failed, 0 skipped | Translator tests, not gameplay tests |
-| Native object compilation | Earlier completed report: 30,045 objects, no failures | No matching full-build report verified for 32,275 functions |
-| REL linking | Previously documented comparison with Dolphin: 8,017,604 bytes | Module linkage does not prove runtime correctness |
-| Early Wii startup | First VI-access MEM1 comparison previously differed by four time-base bytes | No actual gameplay frame was rendered |
-| Interrupts and IPC | Early runs delivered external interrupts and exercised IOS communication | Wider scheduling and event-order correctness are unresolved |
-| Linux fibers | Implementation and one fiber reported in earlier run | No verified thread switch in the cited earlier run |
-| NAND / SYSCONF | My later 1 November project log reports reading `/shared2/sys/SYSCONF` and reaching 31 interrupts | Reported progress, not independently reproduced or fully reference-validated here |
-| Wait-loop instrumentation | My project log reports the discovery of 55 short polling loops and work on safe-point integration | Retranslation and Dolphin comparison were still running at the log cutoff |
-| IOS disc interface | DI investigation and a file-backed read strategy were being developed | Complete disc reads and timing were not demonstrated |
-| Graphics, audio and gameplay | Architecture and product plans exist | No verified native gameplay rendering or playable build |
+| PowerPC translation | 32,275 functions retranslated; translator unit tests 732/732 | Translation coverage alone does not prove correct gameplay |
+| Earlier compilation | 30,045 functions successfully compiled in an earlier generation | This historical milestone is separate from the later full retranslation |
+| Native scheduling and SPR | Thread-switch comparisons, Dolphin-derived initial SPR values, HID0 translation fix | Timing and floating-point context differences remain |
+| Graphics command processor | **GXInit passed**. 291 GX commands decoded and matched; 512 KiB FIFO compared byte-for-byte with Dolphin at IPC #35 | GX command processing is not graphical rendering |
+| GX capture | Binary command capture and inspection tools implemented | Private captures are not published |
+| Wait loops and interrupts | 103 polling loops instrumented, including 48 with side-effect-free calls; around 35,000 interrupts during a later boot run | Scheduling fidelity is not yet fully established |
+| IOS filesystem / NAND | Permissions, directory handling, metadata and writes exercised; startup SYSCONF matched Dolphin byte-for-byte | Wider filesystem behavior not comprehensively validated |
+| IOS disc / RVZ | Integrated read-only RVZ reader; DOL, FST and sampled reads from a 763 MiB file matched; disc timing model and partition reads exercised | All discs, offsets and timing cases have not been exhaustively verified |
+| Bluetooth | HCI controller initialized with five registered virtual remotes and none connected; native startup progressed past initialization | Complete Wii Remote L2CAP/HID connection and physical controller support are not available |
+| Game startup | **Past GXInit and onward to DSP AX microcode loading**, the current stop | No native audio output or playable session |
+| GPU submissions | Around 1,290 frames submitted to the emulated GPU in one reported run | **Zero confirmed rendered images**; no graphics rendering stage exists yet |
+| Display enhancements | HDR10, VRR, G-SYNC, FreeSync, 16:9 and 21:9 recorded as optional goals | None implemented or validated |
 
-## Open validation questions
+## Memory comparison boundaries
 
-An earlier memory comparison around filesystem IPC reported **220 differing bytes**. Later debugging identified a problem in aligning the reference capture points. That comparison cannot establish a valid state divergence until both sides are captured at equivalent execution points.
+At the fourth IPC call following the main-thread resumption, my most recent report shows **223 different bytes in a 24 MiB MEM1 comparison**. Earlier observations of the same checkpoint varied between **141 and 233 bytes** across revisions. The differences were attributed to timestamps, FPU ownership/context and interrupt timing. Two executions of the same native binary reportedly differed only in timestamp fields (75 bytes).
 
-A prior boot trace also reported unsupported PowerPC special-register writes. Full processor-state fidelity has not been established.
+These discrepancies are **classified but not resolved**. The host-clock-driven time model remains an identified source of nondeterminism. I do not claim full memory equivalence or complete scheduling fidelity.
 
-My recent log records further NAND and timing work, but ends while retranslation and reference capture are in progress. I do not claim those operations finished successfully.
+At IPC #35, the GX commands and FIFO matched Dolphin. Full MEM1 snapshots captured at different points must not be presented as valid divergence measurements.
+
+## Next technical step
+
+The reported current stop is **loading the Wii AX audio microcode into the DSP**. My next engineering task is to implement and compare the necessary audio DSP/AX behavior, initially into a verifiable buffer without requiring actual sound output. Wii Remote connectivity and continued timing validation remain separate tasks.
 
 ## Public release status
 
-I publish documentation and a fan-made banner here, not runtime source, translated game code, Nintendo assets or binaries. I have not released a game build or installer. I plan to publish the launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. Linux is the current development environment; Windows remains a target.
+I publish documentation and a fan-made banner here, not runtime source, translated game code, Nintendo assets, disc images, private NAND data or encryption keys. There is no playable release or launcher. I intend to publish a launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. Linux is my current development environment, with Windows planned.
