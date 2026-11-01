@@ -16,31 +16,31 @@ I am developing an independent project to run *Metroid: Other M* natively on PC 
 
 ## Development status
 
-Early Wii startup code runs in my native development harness. I have not yet verified a gameplay frame or produced a playable build.
+Native startup now reaches the audio DSP AX microcode-loading stage, after passing GXInit and exercising disc and Bluetooth services. I have not verified a rendered gameplay frame or produced a playable build.
 
 | Area | Latest documented evidence |
 | --- | --- |
-| PowerPC translation | 32,275 functions generated, with some speculative discovery |
-| Translator tests | 732 passed in the last inspected suite |
-| Native compilation | 30,045 functions compiled in an earlier generation |
-| Wii services | Interrupt and IOS work; my later project log reports reading NAND `SYSCONF` |
-| Scheduling | Native fibers under development; 55 polling loops identified for instrumentation |
-| Disc and rendering | Disc reads under investigation; no verified gameplay rendering |
+| PowerPC translation | 32,275 functions retranslated; translator suite 732/732 passed in the reported run |
+| Native compilation | Earlier 30,045-function build completed; newer 32,275-function generation reported rebuilt |
+| Wii runtime | Thread switching, special registers, interrupts, IOS, NAND, disc and Bluetooth startup exercised |
+| Graphics command processor | GXInit passed; 291 GX commands and 512 KiB FIFO matched Dolphin at the 35th IPC call |
+| Disc / RVZ | Integrated read-only RVZ reader; DOL, FST and sampled large-file reads matched reference data |
+| Current startup stop | Audio DSP AX microcode loading. Around 1,290 frames submitted to the emulated GPU, **none rendered to the screen** |
 
-The latest NAND and wait-loop observations come from my project logs dated **1 November 2026**. I have not independently reproduced them for this documentation update. The numbers above are distinct milestones, not a game-completion percentage. See [build status](docs/BUILD_STATUS.md).
+My latest **1 November 2026** console report describes these milestones. I have not independently reproduced the runtime tests for this public documentation update. Submitted GPU frames are not rendered gameplay images. The game is still not playable. See [build status](docs/BUILD_STATUS.md).
 
 ## How it works
 
 The toolchain translates Wii PowerPC instructions into C++ and compiles them for a host CPU. A dedicated runtime implements Wii memory handling, hardware interfaces and operating-system services.
 
-This is **not a Dolphin launcher**. Dolphin serves as a reference for behavior and memory comparisons. The graphics backend remains undecided between Aurora/Dawn and a possible direct Vulkan implementation.
+This is **not a Dolphin launcher**. Dolphin serves as a reference for behavior and memory comparisons. The graphics backend remains undecided between Aurora/Dawn, direct Vulkan and a possible Direct3D 12 path.
 
 ## Planned capabilities
 
 These are development goals, not currently available features.
 
 - **Platforms and input:** Windows and Linux, keyboard and mouse, Xbox and PlayStation controllers, and future Wii Remote support via Mayflash DolphinBar.
-- **Visuals:** 16:9 widescreen and 21:9 ultrawide support, with a correctly adapted field of view rather than a stretched picture; 1080p, 1440p and 4K output, optional HD improvements and higher refresh rates up to 144 FPS where technically feasible. These display modes are goals, not implemented or validated features.
+- **Visuals:** 16:9 widescreen and 21:9 ultrawide support, with a correctly adapted field of view rather than a stretched picture; 1080p, 1440p and 4K output, optional HD improvements and higher refresh rates up to 144 FPS where technically feasible. HDR10, VRR, G-SYNC and AMD FreeSync are also future, optional goals, with SDR fallback. None of these display features has been implemented or validated.
 - **Performance:** efficient CPU, GPU, RAM and VRAM usage, support for modest PCs, shader preparation and automated regression testing.
 - **Installation:** local import of a personal game copy, a dedicated launcher and a future update mechanism.
 
