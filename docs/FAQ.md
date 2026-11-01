@@ -24,7 +24,7 @@ Development currently targets native PC execution, with Linux startup work inspe
 
 ## When will it release?
 
-No release date has been announced.
+No release date has been announced. This is a personal project developed in spare time, so development may take a considerable amount of time. The launcher will be published on this repository's [Releases page](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. No launcher or playable build is available yet.
 
 ## Can I build or contribute code here?
 
