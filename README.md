@@ -1,5 +1,9 @@
 # Metroid: Other M Native HD
 
+![Fan-made Metroid: Other M Native HD project banner](assets/metroid-other-m-native-hd-banner.webp)
+
+*Unofficial fan artwork. Not an in-game screenshot.*
+
 An independent, experimental project to run Metroid: Other M natively on PC through static recompilation of its Wii PowerPC code.
 
 ![In Active Development](https://img.shields.io/badge/status-In%20Active%20Development-blue)
