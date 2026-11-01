@@ -12,7 +12,7 @@ No. The project translates Wii PowerPC code ahead of time and compiles it for a 
 
 ## Does translating 32,275 functions mean the game works?
 
-No. Translation, compilation, execution and validation are separate milestones. Only a small startup path has the documented runtime comparisons. Some function discovery is speculative.
+No. Translation, compilation, execution and validation are separate milestones. My latest report includes GX command/FIFO comparisons and a longer startup run through GXInit, but does not establish rendered frames or playable gameplay. Some function discovery is speculative.
 
 ## Will I need the original game?
 
@@ -20,7 +20,11 @@ The installation goal requires a personal copy of the game. This repository prov
 
 ## Which platforms and features are supported?
 
-My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. I plan to support 16:9 widescreen and 21:9 ultrawide displays with properly adapted visuals rather than stretching the image. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are also planned. None of these display or gameplay features has been validated yet, and I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
+My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. I plan to support 16:9 widescreen and 21:9 ultrawide displays with properly adapted visuals rather than stretching the image. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are also planned. HDR10, VRR, NVIDIA G-SYNC and AMD FreeSync are additional optional goals, with SDR fallback for unsupported setups. None of these display or gameplay features has been validated yet, and I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
+
+## What does "1,290 frames submitted" mean?
+
+The native harness reportedly submitted about 1,290 frames to the emulated GPU, but it currently has **no rendering backend**. No visible native game image has been produced and the game is not playable.
 
 ## When will it release?
 
