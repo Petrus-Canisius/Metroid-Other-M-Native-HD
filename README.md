@@ -22,7 +22,7 @@ My intended PC version will offer:
 
 These are **future product goals**, not a list of completed features.
 
-## Latest progress — reports through 2 November 2026
+## Latest progress — documentation reviewed 3 November 2026
 
 **The private Ubuntu prototype already opens a real SDL3/Vulkan window, outputs audio and accepts a physical Xbox Series X controller.** A recorded controller session was replayed against a no-input run and showed Samus **moving and firing** in the training room. This is an interactive prototype, **not a full-speed or publicly released PC game**.
 
