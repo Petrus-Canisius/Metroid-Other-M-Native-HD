@@ -22,49 +22,55 @@ My intended PC version will offer:
 
 These are **future product goals**, not a list of completed features.
 
-## Latest progress — 2 November 2026
+## Latest progress — reports through 2 November 2026
 
-**A real SDL3 window now displays the game on Ubuntu using Vulkan.** The private prototype also outputs sound and reads a real Xbox Series X controller. A recorded controller session was replayed and compared against a no-input run: **Samus moved and fired in the training room** only when the controller inputs were present.
+**The private Ubuntu prototype already opens a real SDL3/Vulkan window, outputs audio and accepts a physical Xbox Series X controller.** A recorded controller session was replayed against a no-input run and showed Samus **moving and firing** in the training room. This is an interactive prototype, **not a full-speed or publicly released PC game**.
 
-That is a significant gameplay milestone. However, **many other actions remain untested, the game is not yet at normal speed, and there is no downloadable build**.
+The recent engineering effort has focused on **accurate, repeatable performance optimization**, not adding headline features:
 
-| Area | Latest reported result |
+| Area | Latest reported evidence |
 | --- | --- |
-| Native program | **32,282 translated PowerPC functions**; **753/753** translator tests passed |
-| Linux display | **SDL3 desktop window with Vulkan**, resizing and fullscreen support; no user-facing Windows build |
-| Real controller | Xbox controller input recorded and replayed; **movement and beam fire** demonstrated in the training room |
-| Graphics | GPU-based Vulkan drawing with batching and GPU-side texture copies; **28,167 frames** unchanged against the established internal test baseline |
-| Sound | Audio plays through the Linux output device; **156.7 seconds** matched a reference capture in the latest reported comparison |
-| Repeatability | More than ten repeat runs produced identical images at the tested points; **7,686 GPU texture results** matched the CPU reference |
-| Performance | Training-room benchmark improved from **0.369× to 0.576× normal game speed** (roughly 22 to 35 simulated frames/s on the tested 60 Hz sequence) |
-| Windows | Cross-platform groundwork and Windows-specific code exist, but **the Windows version has not been compiled or tested** |
+| Recompilation | **32,282 PowerPC functions** translated; **753/753 translator tests** passed |
+| Linux experience | SDL3/Vulkan window, audio output and real-controller input; movement and beam fire demonstrated in a controlled replay |
+| Rendering | GPU copy-to-texture, optimized TEV shader, two transformation workers, parallel triangle assembly/clipping and bounded Vulkan image reuse |
+| Performance | Most recent unchanged-code session: **0.879–0.917× speed (0.897× average across five runs)** in the training-room benchmark; **18.19–18.97 ms/frame** |
+| Controlled code improvement | Earlier paired A/B testing demonstrated a **~0.54 ms/frame** gain from parallel triangle assembly; stable results in that session were **0.835–0.848×** |
+| Accuracy | **28,167 internal regression frames** unchanged; graphics and game timing still have known differences from Dolphin |
+| Audio | **156.73 seconds** matched a tested reference capture; not whole-game validation |
+| Memory | Approximately **857 MB RAM** and **78 MB VRAM** in the recent benchmark; not minimum requirements |
+| PAL save | European **R3OP** Wii SD export identified, with **three save slots**; contents are encrypted, “100%” progress and native loading unverified |
+| Windows | Cross-platform scaffolding exists; **Windows has not been compiled or tested** |
 
-### What the performance numbers mean
+### Why the latest speed must be interpreted carefully
 
-The training-room sequence now averages **28.98 ms of processing per frame**, compared with **45.27 ms** before this optimization phase. To sustain the original speed on that 60 Hz test, the target is about **16.67 ms per frame**.
+The last session **did not retain a new performance optimization**. Moving geometric slope calculation to the transformation workers was tested with alternating A/B runs, produced correct frames, but was **slightly slower (~0.21 ms/frame on average)** and was reverted.
 
-The gains came from moving certain image-to-texture conversions to the GPU, avoiding repeated vertex calculations, removing unused software work and dividing the final image conversion across CPU threads. The GPU is not the only limiting factor: CPU graphics preparation and synchronization still need work.
+The same existing code benchmarked substantially faster in the most recent session than the previous one. Thus, **the 0.897× average is an observed result under those machine conditions, not a new code-attributable improvement**. The next development task is to characterize between-session variability and optimize the vertex loader and native runtime overhead.
 
-**A speed of 0.576× is not 57.6% completion of the project.** It is one benchmark result from one scene.
+For the tested 60 Hz training sequence, normal speed would require around **16.67 ms/frame**, compared with approximately **18.58 ms/frame** averaged across the most recent runs. **0.90×, 0.95× and stable 1.0× remain unverified milestones.** A speed multiplier is not a project-completion percentage.
 
-### What has not been validated
+### Better understanding of startup stutters
 
-- A **full-speed, sustained gameplay session**.
-- All Xbox controls: jump, Morph Ball, evasions, first-person aiming, missiles and concentration still need real gameplay verification.
-- Physical Wii Remote **and DolphinBar** operation.
-- Full-game progression, saved-game loading, and all areas or effects.
-- The remaining Vulkan effects, including some fog, indirect texture effects, mipmaps and fade behavior. **29 fade frames still differ** from the software reference in the specific comparison.
-- A compiled Windows build, 4K/ultrawide/HDR/VRR modes, or the planned anti-aliasing choices.
+Isolated cache tests measured approximately **436 ms to create pipelines with an empty cache**, versus **1 ms with a warm cache**. The first rendered frame took **514 ms cold**, versus **82 ms warm**. This explains a previously observed ~520 ms startup spike in the tested case; it does **not** prove every gameplay stutter is gone. Pipeline preparation and cache strategy are future work.
 
-In particular, the **28,167 matching frames are an internal before/after regression check**, not proof that every frame matches Dolphin. At two memory checkpoints, **135 and 387 bytes still differ from Dolphin**.
+### What still needs work
 
-## Next development priorities
+- Sustained **1.0×** simulation speed, predictable frame pacing and tests in multiple scenes.
+- Missing GX/Vulkan effects, including certain fog, indirect-texture, mipmap and blending behavior; **29 fade frames remain different** in the software comparison.
+- Unresolved Dolphin memory differences of **135 and 387 bytes** at two observed checkpoints.
+- Gameplay validation for jump, Morph Ball, dodge, first-person aiming, missiles, concentration and other actions.
+- The actual contents and 100%-completion claim of the PAL save; **no Dolphin import or native save loading has been demonstrated**.
+- Physical Wii Remote/DolphinBar, a tested Windows build and optional HD/HDR/VRR/anti-aliasing modes.
 
-1. **Reach 1.0× stable game speed** by improving CPU-side geometry and lighting, GPU copies and the remaining rendering bottlenecks.
-2. **Complete the missing Wii graphics behavior** while continuing image-by-image comparisons.
-3. **Test real gameplay with an Xbox controller**, including movement, shooting, jumping, Morph Ball, missiles, aiming and motion-based actions.
-4. **Adapt all required Wii Remote gestures** for keyboard/mouse and conventional controllers while keeping optional real Wii Remote support in scope.
-5. **Validate more scenes and game saves**, then pursue Windows builds and optional visual upgrades.
+### Immediate priorities
+
+1. Establish **repeatable performance measurements**: the same binary has varied by more than a millisecond per frame between sessions.
+2. Profile and streamline the **vertex loader** and overhead around the recompiled PowerPC code.
+3. Reduce remaining Vulkan and synchronization costs while preserving exact output.
+4. Prepare GPU pipelines more predictably to avoid cold-cache startup stalls.
+5. Validate full-speed real-controller gameplay, then broaden scene and save-game coverage.
+
+For measurement methodology, optimization history, retained versus rejected experiments and remaining known failures, see the [development status](docs/BUILD_STATUS.md) and [development history](docs/DEVELOPMENT_LOG.md).
 
 ## Development evidence and publication
 
