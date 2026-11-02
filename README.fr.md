@@ -22,7 +22,7 @@ Je souhaite proposer à terme :
 
 Ce sont des **objectifs**, et non des fonctionnalités déjà disponibles dans une version publique.
 
-## Dernières avancées — rapports jusqu'au 2 novembre 2026
+## Dernières avancées — documentation actualisée le 3 novembre 2026
 
 **Le prototype privé sous Ubuntu s'affiche dans une véritable fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique.** Une séance de commandes enregistrée a été rejouée et comparée à une exécution sans entrée : Samus **se déplace et tire** dans la salle d'entraînement. Ce prototype interactif **n'est pas encore un jeu PC complet, fluide et distribué**.
 
