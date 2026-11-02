@@ -12,25 +12,27 @@ My goal is a **faithful, fluent, fully controllable native PC version** of *Metr
 | **2. Rebuild Wii services** | Disc, memory, timing, audio and virtual Wii Remote behavior | Startup and major paths working; open fidelity differences remain |
 | **3. Produce real images and sound** | Menus, introduction and game graphics/audio | **Demonstrated in the private native harness** |
 | **4. Provide direct PC interaction** | Linux window and physical gamepad or keyboard input | **SDL3 window and real Xbox input demonstrated**; movement and beam fire confirmed through replay |
-| **5. Reach normal-speed gameplay** | Stable rendering, audio, responsive controls and complete training actions | **In progress:** training benchmark at **0.576× normal speed** |
+| **5. Reach normal-speed gameplay** | Stable rendering, audio, responsive controls and complete training actions | **In progress:** latest unchanged-code run averaged **0.897×** in one training benchmark; host conditions vary and **stable 1.0× is not reached** |
 | **6. Validate the full game** | All scenes, mechanics, saves, controller functions and long sessions | Not demonstrated; additional scenarios needed |
 | **7. Improve presentation** | 1080p/1440p/4K, 16:9/21:9, optional AA, HDR10 and VRR | Planned, not player-ready |
 | **8. Windows and distribution** | Compile and test Windows, install using a player's copy, launcher and Releases | Windows source groundwork only; no public build |
 
-## Immediate priority: finish the first fluid Linux gameplay prototype
+## Immediate priority: establish reliable measurement and full-speed gameplay
 
-The development environment already has a window, sound and input. The main missing capability is **reliable real-time speed**.
+The Linux prototype already has a window, audio and physical Xbox-originated inputs. **The biggest remaining milestone is demonstrably stable, normal-speed gameplay.**
 
-The next engineering work therefore targets:
+**Performance history:** early tests measured **0.369×**, then **0.576×**; retained code optimizations led to **0.807–0.808×** and **0.835–0.848×** in later controlled sessions. The latest run of the *same code*, under different host conditions, measured **0.879–0.917×**, **0.897× average** across five executions. **No new code optimization caused that latest between-session rise.**
 
-1. Measure the latest rendering bottlenecks using reproducible training-room tests.
-2. Reduce CPU-side vertex processing and lighting overhead, with safe parallelism where appropriate.
-3. Reduce remaining copy/encoding and memory synchronization costs.
-4. Preserve byte-identical internal frames, reference audio and deterministic test behavior.
-5. Reach **1.0× game speed** and acceptable frame pacing, then verify a real interactive session.
-6. Complete and test Xbox actions: jump, Morph Ball, dodge, first-person view, missiles and concentration.
+Next engineering work:
 
-Measured speed increased from **0.369× to 0.576×** in the latest optimization phase. This is **benchmark speed, not project completion**. Normal speed still needs proof in multiple scenes, not just one training segment.
+1. **Stabilize benchmark conditions**: quantify CPU/GPU frequency, background load, scheduling, shader/pipeline caches and variability; use paired A/B comparisons.
+2. **Profile and specialize high-cost vertex formats** in the GX vertex loader, with a fully correct generic fallback.
+3. **Profile the translated PowerPC runtime helper overhead**, preserving calling-convention correctness and register state.
+4. **Reduce critical-path Vulkan work** and prepare known pipelines earlier, if measured worthwhile.
+5. Demonstrate **0.90×, 0.95× and sustained 1.0×** without skipped work, inaccurate timing or significant frame pacing problems.
+6. Re-test **real physical Xbox gameplay** and validate all essential actions, then broaden checks to other scenes and saves.
+
+The reported frame-time budget for 1.0× on the tested 60 Hz training sequence is **16.67 ms**; the last run averaged around **18.58 ms**. These measurements **do not represent the percentage of project completion**. The lightweight warning screen may run much faster, but is not representative of gameplay.
 
 ## Making Wii controls work on PC
 
@@ -58,9 +60,11 @@ These display enhancements have **not** been implemented and validated as player
 
 ## Full-game verification and saves
 
-After initial speed and controls stabilize, tests should include different rooms, cinematics, fights, saves, loading, transitions and equipment behavior.
+After core speed and physical controls stabilize, validate menus, cinematics, rooms, battles, transitions, save loading, game progression, sound and visual effects in multiple scenes.
 
-A separately obtained European PAL **R3OP** save has been proposed for private compatibility testing. It can potentially help reach later content faster, but **its contents and compatibility with the native runtime have not yet been confirmed**. Never overwrite an original save or distribute private game-save data.
+A **European PAL R3OP Wii SD save** has now been inspected in a private read-only analysis. Its `data.bin` export is **113,408 bytes**, with metadata and **three encrypted save slots**. The advertised **100% completion has not been verified**, and **neither Dolphin import nor native save loading has been tested**. It can become a private test fixture for later areas, but must not replace from-new-game testing.
+
+Keep the original intact and never publish save contents, private NAND data or game assets.
 
 ## Release prerequisites
 
