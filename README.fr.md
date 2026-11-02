@@ -22,49 +22,55 @@ Je souhaite proposer à terme :
 
 Ce sont des **objectifs**, et non des fonctionnalités déjà disponibles dans une version publique.
 
-## Dernières avancées — 2 novembre 2026
+## Dernières avancées — rapports jusqu'au 2 novembre 2026
 
-**Le jeu s'affiche désormais dans une véritable fenêtre SDL3 sous Ubuntu grâce à Vulkan.** Le prototype privé produit du son et reconnaît également une véritable manette Xbox Series X. Une séance enregistrée avec cette manette a été rejouée et comparée à une exécution sans commandes : **Samus se déplace et tire dans la salle d'entraînement** lorsque les commandes sont présentes.
+**Le prototype privé sous Ubuntu s'affiche dans une véritable fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique.** Une séance de commandes enregistrée a été rejouée et comparée à une exécution sans entrée : Samus **se déplace et tire** dans la salle d'entraînement. Ce prototype interactif **n'est pas encore un jeu PC complet, fluide et distribué**.
 
-C'est une étape importante pour le gameplay. Toutefois, **d'autres actions restent à tester, la vitesse normale n'est pas encore atteinte et aucun exécutable n'est disponible au téléchargement**.
+Les dernières sessions visent surtout **l'optimisation mesurable sans perte de fidélité** :
 
-| Domaine | Dernier résultat rapporté |
+| Domaine | Derniers résultats rapportés |
 | --- | --- |
-| Programme natif | **32 282 fonctions PowerPC traduites** ; **753/753 tests** du traducteur réussis |
-| Affichage Linux | **Fenêtre SDL3 avec Vulkan**, redimensionnement et plein écran ; pas encore de version Windows |
-| Manette physique | Entrées Xbox enregistrées et rejouées ; **déplacement et tir** démontrés dans la salle d'entraînement |
-| Graphismes | Rendu Vulkan par lots et copies de textures sur GPU ; **28 167 trames** identiques à la référence interne de non-régression |
-| Son | Sortie sonore sous Linux ; **156,7 secondes** identiques à une capture de référence dans la dernière comparaison rapportée |
-| Reproductibilité | Plus de dix exécutions avec images identiques aux points testés ; **7 686 résultats de textures GPU** conformes à la référence CPU |
-| Performances | Dans la salle d'entraînement : **0,369× → 0,576× de la vitesse normale**, soit environ 22 à 35 images simulées/s sur la séquence testée à 60 Hz |
-| Windows | Base multiplateforme commencée, mais **code Windows non compilé et non testé** |
+| Recompilation | **32 282 fonctions PowerPC** traduites ; **753/753 tests** du traducteur réussis |
+| Expérience Linux | Fenêtre SDL3/Vulkan, sortie audio, manette physique ; déplacement et tir démontrés par rejeu comparatif |
+| Rendu | Copies GPU vers textures, shader TEV optimisé, deux fils de transformation, assemblage/découpage parallèles des triangles et réutilisation bornée des images Vulkan |
+| Performances | Dernière session, code inchangé : **0,879–0,917× (0,897× de moyenne sur cinq exécutions)** dans la salle d'entraînement ; **18,19–18,97 ms/trame** |
+| Gain directement imputable au code | Une comparaison A/B précédente a confirmé **environ 0,54 ms/trame** économisée grâce à l'assemblage parallèle ; dans cette session, la vitesse était de **0,835–0,848×** |
+| Fidélité | **28 167 trames internes** inchangées lors des contrôles de non-régression ; des écarts avec Dolphin demeurent |
+| Son | **156,73 secondes** identiques à une capture de référence testée, sans validation de tout le jeu |
+| Mémoire | Environ **857 Mo de RAM** et **78 Mo de VRAM** lors du dernier banc ; ce ne sont pas des besoins minimaux |
+| Sauvegarde PAL | Export Wii SD européen **R3OP** reconnu avec **trois emplacements** ; progression « 100 % » et chargement natif non vérifiés |
+| Windows | Base multiplateforme présente ; **version Windows non compilée et non testée** |
 
-### Pourquoi les optimisations sont importantes
+### Ce que signifient les dernières mesures
 
-Le moteur traite maintenant une image en **28,98 ms en moyenne**, contre **45,27 ms** avant cette phase. Sur la séquence mesurée à 60 Hz, il faudrait environ **16,67 ms par image** pour maintenir la vitesse originale.
+La dernière session **n'a conservé aucune nouvelle optimisation**. Claude a déplacé temporairement le calcul des pentes géométriques vers les fils de transformation : les images restaient conformes, mais le temps moyen augmentait **d'environ 0,21 ms/trame**. L'expérience a été annulée.
 
-Claude a gagné du temps en évitant des recalculs de sommets, en transférant certaines conversions de textures sur le GPU, en supprimant des traitements logiciels inutiles et en répartissant la conversion de l'image finale sur plusieurs cœurs CPU. La puissance brute de la RTX 4090 ne suffit pas : le traitement graphique côté processeur et les synchronisations nécessitent encore du travail.
+Le même code s'est montré sensiblement plus rapide que lors de la session précédente. Par conséquent, **la moyenne de 0,897× est une observation dépendant des conditions du poste, et non un gain attribuable à une modification de code**. La prochaine priorité est de maîtriser cette variabilité, puis d'optimiser le chargement des sommets et les fonctions du runtime natif.
 
-**0,576× ne signifie pas que le développement du projet est terminé à 57,6 %.** C'est seulement une mesure de vitesse sur une scène donnée.
+Sur la séquence testée à 60 Hz, il faut environ **16,67 ms/trame** pour atteindre la vitesse normale, contre **18,58 ms/trame** en moyenne dans la dernière session. Les paliers **0,90×, 0,95× et 1,0× stable ne sont pas encore validés**. La vitesse de simulation n'est pas le pourcentage d'achèvement du projet.
 
-### Ce qui n'est pas encore validé
+### Origine des saccades au démarrage
 
-- Une **session de jeu prolongée à vitesse normale**.
-- Toutes les commandes Xbox : saut, Morph Ball, esquives, visée subjective, missiles et concentration.
-- Le fonctionnement d'une **véritable Wiimote avec DolphinBar**.
-- La progression intégrale, les sauvegardes et toutes les scènes.
-- Certains effets Vulkan : brouillard, textures indirectes, mipmaps et fondus. **29 trames de fondu diffèrent encore** du moteur logiciel dans une comparaison ciblée.
-- Le portage Windows compilé et les options 4K, 21:9, HDR, VRR et anticrénelage.
+Avec des caches isolés, la création des pipelines Vulkan a demandé environ **436 ms à froid**, contre **1 ms à chaud**. La première image a pris **514 ms à froid**, contre **82 ms à chaud**. Cela explique le pic initial d'environ 520 ms observé dans ce test, sans garantir la disparition de toutes les saccades pendant le jeu. La préparation anticipée des pipelines est à étudier.
 
-Les **28 167 trames identiques** démontrent une absence de régression dans un test interne, **pas** une correspondance intégrale avec Dolphin. Deux comparaisons mémoire présentent toujours **135 et 387 octets de différence** avec Dolphin.
+### Ce qui reste à faire
 
-## Prochaines priorités
+- Atteindre **1,0× en continu**, maîtriser les temps de trame et mesurer plusieurs scènes.
+- Compléter les effets GX/Vulkan : certains traitements de brouillard, textures indirectes, mipmaps et mélange des couleurs ; **29 trames de fondu diffèrent toujours** de la référence logicielle.
+- Examiner les **écarts mémoire de 135 et 387 octets avec Dolphin** aux checkpoints observés.
+- Vérifier le saut, la Morph Ball, les esquives, la visée subjective, les missiles, la concentration et les autres commandes.
+- Vérifier réellement le contenu de la sauvegarde PAL annoncée à 100 % ; **aucune importation dans Dolphin ni lecture native n'a encore été démontrée**.
+- Valider la Wiimote physique avec DolphinBar, compiler Windows et développer les options graphiques HD/HDR/VRR et d'anticrénelage.
 
-1. **Atteindre une vitesse stable de 1,0×** grâce aux optimisations du traitement des sommets, de l'éclairage et des copies graphiques.
-2. **Compléter la fidélité du rendu Vulkan** et poursuivre les comparaisons image par image.
-3. **Valider le gameplay avec une vraie manette Xbox** : déplacements, tirs, saut, Morph Ball, missiles, visée et actions spécifiques.
-4. **Adapter l'ensemble des gestes indispensables de la Wiimote** au clavier-souris et aux manettes classiques, sans abandonner la DolphinBar.
-5. **Tester les sauvegardes et d'autres scènes**, puis préparer Windows et les améliorations graphiques facultatives.
+### Priorités immédiates
+
+1. Rendre **les benchmarks reproductibles** : un même binaire varie de plus d'une milliseconde/trame entre sessions.
+2. Profiler et alléger le **Vertex Loader** et les fonctions d'assistance au code PowerPC recompilé.
+3. Réduire les coûts Vulkan et de synchronisation sans modifier les résultats.
+4. Préparer les pipelines GPU pour limiter les saccades à cache froid.
+5. Valider un gameplay à vitesse normale avec une vraie manette, puis élargir les tests aux autres scènes et aux sauvegardes.
+
+L'[état de développement](docs/BUILD_STATUS.md) et le [journal de développement](docs/DEVELOPMENT_LOG.md) détaillent les preuves, les expériences conservées ou rejetées et les problèmes ouverts.
 
 ## Suivi et publication
 
