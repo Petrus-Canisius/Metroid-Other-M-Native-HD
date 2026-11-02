@@ -4,7 +4,57 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
-## 2026-11-02: Further Vulkan optimization: training room reaches 0.576× (most recent report)
+## 2026-11-03: Review of latest private reports — 0.897× observed, same runtime code
+
+**Change / finding.** The most recent training-room benchmark completed **five runs at 0.879–0.917×**, with an observed average **0.897×** and average processing times between **18.19 and 18.97 ms/frame** (approximately **18.58 ms aggregate**). This is close to normal simulated game speed but **not yet demonstrated as sustained 0.90×, 0.95× or 1.0× gameplay**.
+
+**Evidence and limits.** No new runtime optimization was retained in this session. The **same code** had produced **0.835–0.848×** in the previous session. The between-session improvement therefore **cannot be attributed to a code change**. CPU/GPU operating conditions, background activity, scheduling and cache state still need systematic monitoring. The controlled benchmark focuses on approximately 1,918 simulated frames in the training room (438–470 emulated seconds); these results do not demonstrate full-game performance.
+
+**Rejected experiment.** Moving geometric **slope calculation** (previously within `make_record`) to the transformation workers maintained images, memory and triangle counts but worsened mean frame time by **~0.21 ms/frame** across three paired alternations. The extra data transfer was substantial (reported at **544 bytes/triangle**). The experimental code was **reverted**, and the previous binary hash was restored. Local documentation commit: `17897ac`. This was **not** a new speed improvement.
+
+**Pipeline-cache experiment.** Isolated test caches gave pipeline creation time of **436 ms cold versus 1 ms warm**. The first frame took **514 ms cold versus 82 ms warm**; subsequent frames remained below 50 ms in both reported test cases. This supports cold Vulkan pipeline compilation as the cause of the **observed ~520 ms startup spike**, but does not prove all future scenes are stutter-free. No normal user shader caches were deleted.
+
+**Correctness.** The cited regression runs retained **28,167 identical internal reference frames** and matching triangle counts. Because the experimental code was fully reverted, the most recent session did not rerun the full translator/audio/memory suite; the last full-suite results belong to the previously validated runtime. The known **29 fade frames** and **135/387-byte Dolphin memory differences** remain open. The original PAL save remained untouched and its claimed 100% progression was not verified.
+
+**Next engineering focus.** Establish statistically meaningful **paired benchmarks**, profile the **GX vertex loader** and frequent native runtime helper calls, and investigate pipeline preparation without mixing cold-start and steady-state performance. The latest observed 18.58 ms frame mean remains approximately **1.9 ms** above the nominal **16.67 ms** budget for this 60 Hz test.
+
+## 2026-11-03: Parallel triangle assembly and clipping — controlled improvement
+
+**Change.** The two ordered vertex-transformation workers now also **assemble primitives, clip triangles and capture their data**, using thread-private intermediate state, while the render worker chiefly records Vulkan commands and aggregates counters. The old serial path remains available for controlled comparison. Local code commit: `24707d1`, documentation commit: `90e97c3`.
+
+**Measured benefit.** Three paired same-binary A/B comparisons showed reductions of approximately **0.53, 0.48 and 0.61 ms/frame**, **~0.54 ms/frame on average**. This moved the training benchmark from around **20.30 ms/frame** to **19.67–19.98 ms/frame** in that session, corresponding to **0.835–0.848×**. Although close, **0.85× was not reproducibly reached in that session**.
+
+**Checks.** The old and new modes produced matching **28,167 internal frames**, unchanged triangle counts (**98,418,297 input / 45,399,644 drawn** in the test), the same referenced audio and memory checkpoints, and **753/753 translator** and **3/3 input tests** passing. A new A/B comparison of **two versus three** transformation workers showed **three workers slower**; two remains the default. Approximately **857 MB RAM and 78 MB VRAM** were reported for the benchmark.
+
+**Limits.** This improvement was measured only in the test sequence. The Vulkan/software comparison still reports **29 differing fade frames**. The private PAL save was not loaded. All results come from private Claude Code reports.
+
+## 2026-11-03: GPU image reuse, threading safety and PAL save inspection
+
+**Change.** The Vulkan path previously performed thousands of costly image memory allocations and frees. A **bounded reusable image pool** (up to 512 images) now recycles retired images by usage/size, checking that they are no longer in GPU use. Local commit: `8f19390`.
+
+**Measurements.** The same-session benchmark improved from **22.20–22.22 ms/frame to 20.64–20.66 ms/frame**, or approximately **0.751× to 0.807–0.808×**. One paired measurement isolated **~1.3 ms/frame gain** from the image pool; the sampled driver-call proportion in the render thread fell from **16.7% to 0.8%**. RAM remained about **857 MB**, without a demonstrated memory increase. No broader minimum-hardware conclusion can be drawn.
+
+**Other changes.** A shared normal-data cache was found to be accessed concurrently by rendering and vertex workers. The render path was changed to use the command's own data, eliminating the non-synchronized shared access (**`4bcf93d`**). This was kept as a **safety correction without measurable performance improvement**. The benchmark gained a top-five slowest-frame report (**`3846442`**), which identified a consistent **~85–88 ms first-frame startup cost**. The previous ~520 ms spike was not initially reproduced and was subsequently analyzed with isolated pipeline caches. Documentation commit: `9122b3b`.
+
+**PAL save discovery.** A European **R3OP** Wii SD export (`data.bin`, **113,408 bytes**) was inspected **read-only**. Its metadata identified the Wii title and **three encrypted save slots**, plus system metadata. The original file's hash was recorded in private documentation and remained unchanged. **The claimed 100% completion, import into Dolphin and ability to load into the native runtime remain untested.** No save content, NAND data or private local path is included in this public log.
+
+**Correctness.** The latest reported full suite continued to pass **753/753 translator**, **3/3 input**, matching internal reference frames and **156.73 seconds** of audio against a selected reference capture. Existing Dolphin discrepancies and missing graphics effects remain open.
+
+## 2026-11-03: Two ordered transformation workers and optimized TEV shader
+
+**Change.** Several iterative optimizations preceded the more recent Vulkan image-pool and triangle-assembly work:
+
+- Reused a light's attenuation calculation for alpha and color, where the same value was previously recalculated (**`1db8166`**); paired results improved roughly **28.21 to 27.0 ms/frame**.
+- Moved vertex transformation to **two ordered worker threads** (**`014d431`**), maintaining local copies of relevant XF/BP graphics state and checking primitive sequence numbers. Repeated comparisons favored **two workers over three**, with a reported **~22.24 ms/frame (0.750×)** configuration.
+- Cached the last known ring-buffer minimum consumer position to avoid needless cache-line bouncing (**`4205464`**); paired results improved from roughly **22.22–22.54 to 21.73–21.86 ms/frame**.
+- Optimized the actual fragment/TEV shader (**`fe1b28c`**), with a reported GPU-render stage reduction from **7.6 to 6.35 seconds** on the measured sequence, and a resulting **0.786–0.805×** benchmark range.
+- Corrected alignment-area reads for image copies and improved thread diagnostics (**`4727370`**), as a fidelity change rather than a performance optimization.
+
+**Rejected experiments.** Futex-style sleeping workers introduced a performance regression and exit problem; that approach was reverted. GPU encoding of EFB-to-RAM copies produced byte-identical output but **no net frame-time gain** and was removed. Further demand-driven synchronization and measurement-toggle changes were not beneficial.
+
+**Accuracy and limitations.** The cited optimization tests retained reference frames, relevant texture-copy checks and audio/memory checkpoints. The runtime was **not** made feature-complete by these changes: **29 Vulkan/software fade frames** and known Dolphin memory deltas remain unresolved. A complete Vulkan validation-layer run was not available.
+
+## 2026-11-02: Earlier Vulkan optimization: training room reaches 0.576×
 
 My latest Claude Code report records a substantial improvement in the **training-room performance benchmark**: **0.369× to 0.576× normal emulated speed**. The average frame processing time fell from **45.27 ms to 28.98 ms**, with P99 falling from **58.70 ms to 35.13 ms**. The benchmark covers approximately 1,918 simulated frames between 438 and 470 emulated seconds. This is a measured gain in one scene, **not a claim of stable full-speed gameplay**.
 
