@@ -6,6 +6,10 @@
 
 An independent project to run the original Wii game *Metroid: Other M* **natively on Linux and, eventually, Windows**. The game program is translated for PC execution, and the required Wii hardware/software behavior is reproduced by a dedicated runtime.
 
+## How far has the recompilation progressed?
+
+The latest private report records **32,282 translated PowerPC functions**, with **753 of 753 translator tests** passing. That is an important foundation, but it does **not** mean the complete original game has been functionally validated.
+
 ## Can I play it already?
 
 **Not as a normal, full-speed PC game.** A **private interactive prototype** runs in a real Ubuntu window using SDL3 and Vulkan, with sound and Xbox controller input. However, the training-room benchmark currently runs at around **0.576× normal speed**. Many gameplay actions and the complete game have not yet been validated.
