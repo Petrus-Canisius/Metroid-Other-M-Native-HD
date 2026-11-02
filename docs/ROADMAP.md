@@ -10,7 +10,7 @@ I organize development around technical dependencies and confirmed tests. I have
 | **2. Wii runtime** | Memory, SPR, interrupts, IOS, NAND, fibers, RVZ, Bluetooth and Wii Remote | Major startup paths exercised; timing, memory and peripheral edge cases still open |
 | **3. Engine startup** | GXInit, DSP AX, disc access, menu progression | GXInit and AX DSP passed; native execution reaches OPTIONS, loading and opening cinematic |
 | **4. Graphics, audio and gameplay** | GX software reference, GPU renderer, audio, controllers, menus, scenes and saves | **First real image matched Dolphin byte-for-byte**; audio partly matched; OPTIONS responds natively. **No validated gameplay yet** |
-| **5. HD quality and performance** | Accelerated rendering, widescreen/ultrawide, HDR10, VRR, HD/4K, frame pacing, optimization | Direct Vulkan recommended but not yet implemented; HDR/VRR and other enhancements remain planned and optional |
+| **5. HD quality and performance** | Accelerated rendering, widescreen/ultrawide, optional anti-aliasing, HDR10, VRR, HD/4K, frame pacing, optimization | Direct Vulkan recommended but not yet implemented; HDR/VRR and other enhancements remain planned and optional |
 | **6. Installation and release** | Local personal game import, Windows/Linux builds, launcher, updates and GitHub Releases | Planned only; no publicly downloadable game |
 
 ## Next engineering milestones
@@ -19,7 +19,7 @@ I organize development around technical dependencies and confirmed tests. I have
 2. **Reproducible menu comparisons:** replay scripted input / DTM in both native and Dolphin, then compare corresponding XFB frames and menu state. Current native OPTIONS/START/HOME results have not all been matched in Dolphin.
 3. **Direct Vulkan GPU backend:** preserve the software renderer as an oracle, implement native accelerated image output incrementally and compare against the reference.
 4. **First controllable gameplay:** move beyond menus and cinematic to a tested sequence involving Samus and actual game controls.
-5. **Modern visual options:** consider 16:9 and 21:9 framing, HD/4K, optional HDR10 and VRR/G-SYNC/FreeSync when the renderer is stable and hardware validation is possible.
+5. **Modern visual options:** consider 16:9 and 21:9 framing, HD/4K, **optional anti-aliasing** (evaluate FXAA and SMAA post-processing, MSAA where compatible with the GX-to-Vulkan rendering path, and TAA only if reliable motion data and artifact controls become available), and optional HDR10 and VRR/G-SYNC/FreeSync when the renderer is stable and hardware validation is possible. Keep anti-aliasing off by default in reference comparisons so it does not alter pixel-exact GX validation.
 6. **Distribution:** test Windows/Linux portability and prepare the launcher only once a robust game path is demonstrated.
 
 ## Technical limits
