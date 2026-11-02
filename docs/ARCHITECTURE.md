@@ -49,6 +49,6 @@ Some GPU readback behaviors, such as bounding-box and pixel-engine counters, are
 
 ## Future output and distribution
 
-I am planning Windows and Linux builds. Advanced visual goals are 1080p, 1440p and 4K, 16:9 and 21:9, HDR10, VRR, G-SYNC and FreeSync, with optional configuration and SDR fallback. They are **not implemented** in the current renderer. Game speed must remain independent of monitor refresh rate.
+I am planning Windows and Linux builds. Advanced visual goals are 1080p, 1440p and 4K, 16:9 and 21:9, optional anti-aliasing, HDR10, VRR, G-SYNC and FreeSync, with optional configuration and SDR fallback. Anti-aliasing candidates include FXAA and SMAA, plus MSAA if the final GX-to-Vulkan pipeline supports it; TAA needs further feasibility testing. An off setting is required, and the pixel-accurate software reference renderer must not be modified by optional post-processing. They are **not implemented** in the current renderer. Game speed must remain independent of monitor refresh rate.
 
 No native gameplay session or distributable launcher is verified. Captures, disc images, translated game code, NAND content and game assets remain private. The Dolphin-derived software graphics code and other reused components require a per-file license audit and applicable GPL obligations before any public software distribution.
