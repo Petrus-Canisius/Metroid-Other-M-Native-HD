@@ -41,7 +41,7 @@ This is **not a Dolphin launcher**. Dolphin serves as a reference for behavior a
 These are development goals, not currently available features.
 
 - **Platforms and input:** Windows and Linux, keyboard and mouse, Xbox and PlayStation controllers, and future Wii Remote support via Mayflash DolphinBar.
-- **Visuals:** 16:9 widescreen and 21:9 ultrawide support, with a correctly adapted field of view rather than a stretched picture; 1080p, 1440p and 4K output, optional HD improvements and higher refresh rates up to 144 FPS where technically feasible. HDR10, VRR, G-SYNC and AMD FreeSync are also future, optional goals, with SDR fallback. None of these display features has been implemented or validated.
+- **Visuals:** 16:9 widescreen and 21:9 ultrawide support, with a correctly adapted field of view rather than a stretched picture; 1080p, 1440p and 4K output, optional HD improvements, **optional anti-aliasing** (FXAA, SMAA and MSAA to evaluate according to the eventual GPU backend), and higher refresh rates up to 144 FPS where technically feasible. HDR10, VRR, G-SYNC and AMD FreeSync are also future, optional goals, with SDR fallback. None of these display features has been implemented or validated.
 - **Performance:** efficient CPU, GPU, RAM and VRAM usage, support for modest PCs, shader preparation and automated regression testing.
 - **Installation:** local import of a personal game copy, a dedicated launcher and a future update mechanism.
 
