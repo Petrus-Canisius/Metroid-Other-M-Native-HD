@@ -16,19 +16,19 @@ I am developing an independent project to run *Metroid: Other M* natively on PC 
 
 ## Development status
 
-Native startup has now **passed AX audio DSP initialization** and continues to the development harness's watchdog limit without a reported crash. I have not produced a visible gameplay frame, audible game audio or a playable build.
+**First native game images are now rendered.** My adapted software GX renderer produced the Wii Remote wrist-strap warning screen, with its **614,400-byte XFB image matching Dolphin byte-for-byte** under equivalent copy-filter settings. The native harness also reaches the **OPTIONS menu**, reacts to scripted Wii Remote input and runs the opening cinematic. **No gameplay sequence has been validated, and there is no playable release.**
 
-| Area | Latest documented evidence |
+| Area | Latest reported evidence |
 | --- | --- |
-| PowerPC translation | 32,275 functions retranslated; translator suite 732/732 passed in the reported run |
-| Native compilation | Earlier 30,045-function build completed; newer 32,275-function generation reported rebuilt |
-| Wii runtime | Thread switching, special registers, interrupts, IOS, NAND, disc and Bluetooth startup exercised |
-| Graphics command processor | GXInit passed; 291 GX commands and 512 KiB FIFO matched Dolphin at the 35th IPC call |
-| Disc / RVZ | Integrated read-only RVZ reader; DOL, FST and sampled large-file reads matched reference data |
-| AX DSP audio | AX microcode processing, audio DMA, interrupts and WAV capture implemented; 73,903 command frames and 135,750 thread switches reported in a longer run | 
-| Latest execution | No reported crash up to the harness watchdog. The game may be waiting for an unconnected Wii Remote; **no image rendered and no audible game sound** |
+| PowerPC translation | **32,282 functions** translated, including seven newly discovered indirect-entry functions; **732/732** translator tests passed |
+| Wii runtime | Startup, IOS, NAND, direct RVZ reading, scheduling and Wii Remote emulation exercised |
+| Graphics | Software GX renderer produces real image data; the wrist-strap XFB matched Dolphin on **614,400/614,400 bytes** |
+| Menus and input | OPTIONS navigation, settings changes, HOME/IR pointer and START-to-intro transition observed **in native runs** |
+| Audio | **17.09 seconds** of active output matched Dolphin sample-for-sample after synchronization |
+| Next work | Deterministic Wii timing and repeatable menu validation, then GPU-accelerated rendering (direct Vulkan recommended, not yet implemented) |
 
-My latest **1 November 2026** console report describes these milestones. I have not independently reproduced the runtime tests for this public documentation update. The native audio capture was silent over 239 seconds, and a 250-second Dolphin comparison was also silent without a connected Wii Remote. With no active voices, this is **not** a validation of audible mixing. Submitted GPU frames are not rendered gameplay images. The game is still not playable. See [build status](docs/BUILD_STATUS.md).
+This status reflects my **2 November 2026** Claude Code development report. The first image and some earlier introduction frames have reference matches, but Dolphin has **not yet reproduced every native menu interaction**. The reference software renderer is slow (approximately 28 FPS on the reported full-screen test) and is **not the planned final graphics backend**. I have not independently rerun these private tests for the documentation update. See [build status](docs/BUILD_STATUS.md).
+
 
 ## How it works
 
