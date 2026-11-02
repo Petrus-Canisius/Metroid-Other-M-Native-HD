@@ -4,45 +4,51 @@
 
 ## Translation pipeline
 
-The initial target is the PAL Wii revision identified locally as R3OP01. DOL contains the main executable and REL a relocatable module. My local toolchain discovers functions, applies relocations and statically translates PowerPC instructions into host-compiled C++.
+My initial target is the PAL Wii revision identified locally as R3OP01. The Wii DOL executable and REL module are analyzed and relocated before their PowerPC functions are translated into host-compiled C++.
 
 ```mermaid
 flowchart TD
-    A[Personal game copy kept local] --> B[DOL and REL analysis]
-    B --> C[Static relocation and function discovery]
-    C --> D[Adapted WiiCompiled translator]
-    D --> E[Generated C++]
-    E --> F[Host compilation]
-    F --> G[Native development harness]
-    G --> H[Wii runtime and IOS services]
-    H --> I[GX command processing and DSP interfaces]
-    J[Dolphin reference runs] -. memory and behavior comparison .-> G
+    A[Personal Wii game copy, kept local] --> B[DOL and REL analysis]
+    B --> C[Relocations and function discovery]
+    C --> D[Static PowerPC-to-C++ translation]
+    D --> E[Host compilation]
+    E --> F[Native runtime, IOS and Wii hardware interfaces]
+    F --> G[GX command processor]
+    G --> H[Adapted software renderer for reference images]
+    G -. future .-> I[Direct Vulkan GPU renderer]
+    J[Dolphin reference runs] -. timing, audio and XFB comparisons .-> F
 ```
 
-This is a development architecture, not a distributed installer.
+This diagram describes the development pipeline, not a downloadable installer. Dolphin is a diagnostic reference, **not the final execution engine**.
 
-## Native runtime, reported 1 November 2026
+## Runtime and input
 
-My native development harness now passes GXInit. It implements parts of memory access, PowerPC special registers, interrupt and scheduler behavior, NAND filesystem services, disc commands and Bluetooth HCI. Linux host fibers are part of the scheduling layer. An instrumenter inserts safe points into short and side-effect-free-call polling loops to advance emulated time.
+The native runtime implements portions of memory access, PowerPC special registers, thread switching, interrupts, NAND, IOS and direct read-only RVZ disc access. The Wii Remote emulator has a Bluetooth HCI controller, L2CAP/HID connection and input reports. Scripted input supplies Wii Remote buttons, accelerometer and infrared data during reproducible native tests.
 
-The **CPU-side GX interface** includes the gather pipe, command processor registers, FIFO, command decoding and binary capture. A reference comparison at the 35th IPC call matched 291 commands and the 512 KiB FIFO memory region. This does **not** generate pixels. A graphics rendering backend has not yet been selected or implemented.
+At the 2 November 2026 milestone, **32,282 functions** have been translated, including seven extra indirect-entry points needed to progress after START. The reported translator suite passed **732/732** tests. This remains separate from gameplay correctness.
 
-An integrated **read-only RVZ** reader supports direct access to partition data from a local personal disc copy. Reported DOL, FST and large-file samples matched reference bytes. The IOS disc interface models seeks, rotation and buffering; comprehensive timing and compatibility validation remains pending.
+The DSP AX implementation processes voices and DMA samples. After aligning output timing, the first **17.09 seconds** of active audio matched Dolphin sample-for-sample. Later divergence remains under investigation.
 
-The NAND subsystem now exercises directory enumeration, permissions, metadata and writes. A startup SYSCONF image reportedly matched Dolphin. Bluetooth HCI initialization is exercised with no connected Wii Remote. Full Bluetooth input emulation is still pending.
+## Software GX renderer: first native images
 
-The AX Wii audio microcode is now processed through a Dolphin-derived high-level DSP/AX implementation. Its command frames, DMA capture and scheduled DSP/ARAM events run in the native harness. A reported register-restore fix enabled extended execution with 135,750 thread switches before the watchdog limit. However, both native and reference captures were silent without a connected Wii Remote. **Audible voice mixing has not been validated.**
+My CPU-side GX runtime already handles the gather pipe, CP/PE register interfaces, FIFO and command decoding. I have now connected an **adapted Dolphin software rendering pipeline** to that stream. The pipeline performs vertex work, rasterization, TEV, texturing and EFB-to-XFB copies. XFB images can be exported privately for comparison.
 
-The next reported dependency is Wii Remote L2CAP/HID input emulation. Speaker playback, full graphics rendering and a playable game session remain unfinished.
+The **first Wii Remote wrist-strap warning image** matched Dolphin across **614,400/614,400 XFB bytes** when copy-filter configuration was aligned. Other early frames, including a black transition and some introduction frames, also matched exactly.
 
-## Graphics and output architecture
+The native harness can display the strap screen, the METROID intro and OPTIONS, and accepts scripted inputs for settings changes, START, HOME and IR pointer movement. These later menu interactions are **native observations only**, not all independently reproduced in Dolphin.
 
-Aurora/Dawn/WebGPU, direct Vulkan and a potential Direct3D 12 path remain under consideration. I have not selected a backend. Future output goals include 1080p, 1440p, 4K, 16:9 and 21:9, optional HDR10 and VRR compatibility (including G-SYNC and FreeSync where hardware permits), and appropriate fallback to SDR, 60 Hz and 16:9. These features are documentation-only goals at present.
+The software renderer runs at approximately **28 FPS** in the reported full-screen test. It is **not appropriate as the final product renderer**. It remains a reference for future accelerated rendering. I currently favor **direct Vulkan** as the future GPU backend, behind the same graphics interface, but Vulkan rendering has **not yet been implemented**.
 
-Game timing must remain independent of monitor refresh rate. Display capability detection and frame-ready signaling are architectural requirements for a future renderer, not functioning features in the current boot harness.
+## Timing and validation boundaries
 
-## Validation and distribution boundaries
+The emulated Wii clock still partly relies on host elapsed time. Software rendering initially affected emulated time and Wii Remote connectivity; that rendering-duration issue was mitigated, but a fully deterministic clock is unfinished. Time-dependent animated effects and input transitions can therefore differ in phase from Dolphin.
 
-Dolphin is an external development reference, **not the intended final execution engine**. Reported runtime comparisons have not been independently rerun for this public update. The boot harness uses private development snapshots. No consumer installation flow or playable build is verified.
+The reported 24 MiB memory comparisons remain open: **227 differing bytes at IPC #4** and **810 at IPC #35**. The **GX FIFO** remains identical to Dolphin at its validated checkpoint. The emulator is not yet proven equivalent across the full game.
 
-Public documentation must not contain private GX captures, extracted game data, game binaries, encryption keys or Nintendo assets. Any eventual redistribution of Dolphin-derived or other third-party code requires a per-component license review and corresponding source obligations where applicable.
+Some GPU readback behaviors, such as bounding-box and pixel-engine counters, are incomplete. The test harness stops rather than inventing values if these registers are read.
+
+## Future output and distribution
+
+I am planning Windows and Linux builds. Advanced visual goals are 1080p, 1440p and 4K, 16:9 and 21:9, HDR10, VRR, G-SYNC and FreeSync, with optional configuration and SDR fallback. They are **not implemented** in the current renderer. Game speed must remain independent of monitor refresh rate.
+
+No native gameplay session or distributable launcher is verified. Captures, disc images, translated game code, NAND content and game assets remain private. The Dolphin-derived software graphics code and other reused components require a per-file license audit and applicable GPL obligations before any public software distribution.
