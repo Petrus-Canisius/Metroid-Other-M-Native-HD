@@ -34,7 +34,7 @@ Ce bilan provient du compte rendu de Claude Code du **2 novembre 2026**. La prem
 
 La chaîne de développement traduit les instructions PowerPC de la Wii en C++, puis les compile pour le processeur du PC. Un runtime dédié prend en charge la mémoire, les interfaces matérielles et les services système Wii.
 
-Ce projet **n'est pas un lanceur Dolphin**. Dolphin sert de référence pour les comparaisons de comportement et de mémoire. Le choix du backend graphique reste ouvert entre Aurora/Dawn, Vulkan direct et une éventuelle voie Direct3D 12.
+Ce projet **n'est pas un lanceur Dolphin**. Dolphin sert de référence pour les comparaisons de comportement et de mémoire. Le moteur logiciel adapté de Dolphin produit désormais les images natives de référence. **Vulkan direct** est recommandé pour le futur rendu accéléré par GPU, mais ce backend n'est pas encore implémenté.
 
 ## Fonctionnalités prévues
 
