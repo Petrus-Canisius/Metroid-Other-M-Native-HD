@@ -34,7 +34,7 @@ This status reflects my **2 November 2026** Claude Code development report. The 
 
 The toolchain translates Wii PowerPC instructions into C++ and compiles them for a host CPU. A dedicated runtime implements Wii memory handling, hardware interfaces and operating-system services.
 
-This is **not a Dolphin launcher**. Dolphin serves as a reference for behavior and memory comparisons. The graphics backend remains undecided between Aurora/Dawn, direct Vulkan and a possible Direct3D 12 path.
+This is **not a Dolphin launcher**. Dolphin serves as a reference for behavior and memory comparisons. A Dolphin-derived software renderer now produces the native reference images. **Direct Vulkan** is currently recommended for the future GPU-accelerated renderer, but that backend has not yet been implemented.
 
 ## Planned capabilities
 
