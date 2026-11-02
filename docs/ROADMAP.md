@@ -2,29 +2,32 @@
 
 [Home](../README.md) · [Status](BUILD_STATUS.md) · [Development log](DEVELOPMENT_LOG.md)
 
-I organize development by technical dependencies, without assigning overall completion percentages or release dates.
+I organize development around technical dependencies and confirmed tests. I have not assigned an overall completion percentage or a release date.
 
-| Phase | Scope | Current position |
+| Phase | Scope | Latest position |
 | --- | --- | --- |
-| **1. Recompilation foundation** | DOL/REL analysis, static relocation, function discovery and PowerPC-to-C++ translation | 32,275 functions retranslated; 732 translator tests passed in the reported run. Coverage and correctness remain ongoing |
-| **2. Wii runtime** | Memory, SPR, interrupts, IOS, NAND, fibers, Bluetooth and disc services | Active; significant paths exercised. Memory and timing mismatches remain under investigation |
-| **3. Engine startup** | Reliable threading, IOS disc reads, GX command processing, DSP initialization and entry into further engine execution | **GXInit passed**; disc and Bluetooth initialization exercised; AX DSP microcode now passed; extended run reaches watchdog limit, apparently waiting for a Wii Remote |
-| **4. Graphics, audio and gameplay** | DSP AX handling, actual GX rendering, audio output, input, scenes and saves | AX command processing and audio DMA exercised, but only silence captured with no active voices. Wii Remote L2CAP/HID is next; still no visible pixels or playable game |
-| **5. HD quality and performance** | HDR10, VRR, 16:9 and 21:9, HD/4K output, frame pacing, shader preparation, optimization and regression coverage | Planned only. All advanced display modes must be optional with SDR fallback |
-| **6. Installation and release** | Local import from personal game copy, Windows/Linux builds, launcher, updates and GitHub Releases | Planned; no public release |
+| **1. Recompilation foundation** | DOL/REL analysis, relocation, function discovery, PowerPC-to-C++ translation | **32,282** functions translated after seven new indirect entries; **732/732** translator tests passed in the latest report |
+| **2. Wii runtime** | Memory, SPR, interrupts, IOS, NAND, fibers, RVZ, Bluetooth and Wii Remote | Major startup paths exercised; timing, memory and peripheral edge cases still open |
+| **3. Engine startup** | GXInit, DSP AX, disc access, menu progression | GXInit and AX DSP passed; native execution reaches OPTIONS, loading and opening cinematic |
+| **4. Graphics, audio and gameplay** | GX software reference, GPU renderer, audio, controllers, menus, scenes and saves | **First real image matched Dolphin byte-for-byte**; audio partly matched; OPTIONS responds natively. **No validated gameplay yet** |
+| **5. HD quality and performance** | Accelerated rendering, widescreen/ultrawide, HDR10, VRR, HD/4K, frame pacing, optimization | Direct Vulkan recommended but not yet implemented; HDR/VRR and other enhancements remain planned and optional |
+| **6. Installation and release** | Local personal game import, Windows/Linux builds, launcher, updates and GitHub Releases | Planned only; no publicly downloadable game |
 
-## Technical sequence
+## Next engineering milestones
 
-1. Implement and compare Wii Remote L2CAP/HID, memory and input reports using scripted controller events against Dolphin.
-2. Validate real AX audio voices and output as soon as a reproducible sound-producing state is reached. Continue timing and memory-fidelity work as needed.
-3. Build and validate a native graphics rendering stage. First achieve reliable SDR output.
-4. Design and validate widescreen/ultrawide, HDR and adaptive synchronization through the selected backend. Test VRR behavior on actual hardware.
-5. Complete a usable gameplay path before packaging and releasing the launcher.
+1. **Deterministic Wii time:** decouple simulated time from host wall clock, align asynchronous events and keep rendering cost out of emulated time.
+2. **Reproducible menu comparisons:** replay scripted input / DTM in both native and Dolphin, then compare corresponding XFB frames and menu state. Current native OPTIONS/START/HOME results have not all been matched in Dolphin.
+3. **Direct Vulkan GPU backend:** preserve the software renderer as an oracle, implement native accelerated image output incrementally and compare against the reference.
+4. **First controllable gameplay:** move beyond menus and cinematic to a tested sequence involving Samus and actual game controls.
+5. **Modern visual options:** consider 16:9 and 21:9 framing, HD/4K, optional HDR10 and VRR/G-SYNC/FreeSync when the renderer is stable and hardware validation is possible.
+6. **Distribution:** test Windows/Linux portability and prepare the launcher only once a robust game path is demonstrated.
 
-## Planned capabilities
+## Technical limits
 
-I target Windows and Linux, keyboard and mouse, Xbox and PlayStation controllers and optional Wii Remote connectivity via Mayflash DolphinBar. Display goals include 1080p, 1440p, 4K, 16:9 and 21:9. HDR10, VRR, NVIDIA G-SYNC and AMD FreeSync are **optional plans**, dependent on supported GPUs, drivers, monitors and operating systems. Standard SDR 60 Hz 16:9 output must remain available.
+The current software reference renderer is relatively slow (approximately 28 FPS on the reported test). The first XFB screen matched Dolphin exactly, but a handful of frames do not establish whole-game graphics fidelity. Audio was identical for 17.09 seconds after synchronization, then diverged in a way not yet explained. IPC #4 and #35 memory differences remain open.
 
-Higher frame rates, possibly up to 144 FPS, require game timing validation and may not be feasible for every scene. Hardware requirements and release dates remain undetermined.
+The targeted platforms are Windows and Linux. Planned input includes keyboard, mouse, Xbox/PlayStation controllers and optional physical Wii Remote support via Mayflash DolphinBar. Existing **scripted Wii Remote emulation in the development harness** is not equivalent to validated physical controller support.
 
-I plan to publish the launcher through this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. I develop this project in my spare time.
+High refresh rates up to 144 FPS remain exploratory and must not change original game timing. Standard SDR 60 Hz 16:9 must remain available.
+
+I intend to publish the launcher through this repository's [Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when ready. I develop the project in my spare time and have not set a release date.
