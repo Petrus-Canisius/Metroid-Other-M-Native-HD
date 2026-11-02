@@ -1,71 +1,75 @@
 # Metroid: Other M Native HD
 
-I am developing an **unofficial native PC adaptation of *Metroid: Other M***, the game originally released for Wii. The aim is to preserve the original adventure and make it run directly on a modern computer, with a more practical control scheme and optional graphics improvements.
+I am working on an **independent native PC adaptation of *Metroid: Other M***, originally released for Nintendo Wii. The goal is to preserve the original game while making it practical to run on modern computers, with conventional PC controls and, eventually, optional visual improvements.
 
-This is an independent fan project, **not affiliated with Nintendo**. It is **in active development, not yet playable as a normal PC game, and not available for download**.
+**Current status: an interactive Linux prototype exists, but it still runs below normal speed. There is no public playable release.**
 
 **English** | [Français](README.fr.md)
 
-[Current progress](docs/BUILD_STATUS.md) · [Roadmap](docs/ROADMAP.md) · [Development history](docs/DEVELOPMENT_LOG.md) · [How it works](docs/ARCHITECTURE.md) · [FAQ](docs/FAQ.md)
+[Latest progress](docs/BUILD_STATUS.md) · [Roadmap](docs/ROADMAP.md) · [Development history](docs/DEVELOPMENT_LOG.md) · [How the project works](docs/ARCHITECTURE.md) · [FAQ](docs/FAQ.md)
 
-## What I want to create
+## The project in brief
 
-My goal is to give *Metroid: Other M* a genuine PC version rather than a packaged Wii emulator. The project translates the game's PowerPC instructions into code that a modern PC can run and rebuilds the Wii services the game expects.
+This is **not a repackaged Dolphin emulator**. The development process translates the Wii game's PowerPC program into code that can run on a PC, while rebuilding the Wii services, input, audio and graphics behavior it depends on. Dolphin remains an important **reference for checking correctness**, and some open-source Dolphin components have been adapted in the private runtime.
 
-The finished experience is intended to offer:
+My intended PC version will offer:
 
-- **Native Windows and Linux versions**, with a dedicated launcher and local use of the player's own game copy.
-- **Keyboard and mouse or conventional controllers**, including Xbox and PlayStation-style gamepads. Original Wii Remote movements, pointing and changes of orientation should be mapped to accessible PC controls so that a physical Wii Remote is **not required** to complete the game.
-- **A flexible display**, starting with a faithful picture and eventually offering 1080p, 1440p and 4K, widescreen 16:9 and carefully adapted 21:9 where feasible.
-- **Optional visual improvements**, including adjustable anti-aliasing (with an Off setting), HDR10 and variable refresh rate (G-SYNC/FreeSync where supported).
-- **Respect for the original game**, including its pacing, gameplay, sound and atmosphere. Higher refresh rates are a goal only where they do not break the game.
+- **Linux and Windows** native applications and a dedicated launcher.
+- **Keyboard and mouse or Xbox/PlayStation-style gamepads**, including adaptations for Wii Remote gestures, pointing and the switch between horizontal and vertical use. A physical Wii Remote should not be required to finish the game.
+- **Optional original-style Wii Remote controls**, including the goal of supporting a real remote with a Mayflash DolphinBar.
+- **Faithful graphics first**, then optional 1080p/1440p/4K output, carefully adapted 16:9 and 21:9, adjustable anti-aliasing, HDR10 and VRR where feasible.
+- **Smooth performance and accurate gameplay**, without making the game's speed depend on the monitor's refresh rate.
 
-These are **project objectives**, not features already available in a released build.
+These are **future product goals**, not a list of completed features.
 
-## Where development stands — 2 November 2026
+## Latest progress — 2 November 2026
 
-**Samus now appears in the training area and responds to scripted controller inputs in the native development harness.** A controlled comparison showed that two runs produced the same frames until the first input was sent; afterwards, the input-driven run showed Samus moving while the no-input run did not.
+**A real SDL3 window now displays the game on Ubuntu using Vulkan.** The private prototype also outputs sound and reads a real Xbox Series X controller. A recorded controller session was replayed and compared against a no-input run: **Samus moved and fired in the training room** only when the controller inputs were present.
 
-This is an important step toward gameplay, but **it is not a playable PC build**. There is still **no normal game window or live keyboard/gamepad control**.
+That is a significant gameplay milestone. However, **many other actions remain untested, the game is not yet at normal speed, and there is no downloadable build**.
 
-| Part of the project | Current result |
+| Area | Latest reported result |
 | --- | --- |
-| Rebuilding the game | **32,282 translated functions**; **753/753 translator tests** passed in the latest reported session |
-| Startup and navigation | Wii Remote emulation allows progress through warnings, menus, loading and the opening cinematic |
-| First gameplay scene | Samus and the in-game display appear in the training area; movement caused by **scripted input** has been demonstrated |
-| Graphics | A reference renderer produces genuine images and has matched Dolphin exactly on selected frames. An **early Vulkan GPU renderer** now works on the development PC |
-| Sound | After aligning the recordings, **20.58 seconds** of active audio matched the Dolphin reference sample-for-sample |
-| Reliability | A new emulated clock makes repeated native runs agree at the memory checkpoints tested; some differences with Dolphin remain |
-| Windows | A cross-platform foundation and Windows-specific implementation have been written, but **the Windows version has not been compiled or tested** |
+| Native program | **32,282 translated PowerPC functions**; **753/753** translator tests passed |
+| Linux display | **SDL3 desktop window with Vulkan**, resizing and fullscreen support; no user-facing Windows build |
+| Real controller | Xbox controller input recorded and replayed; **movement and beam fire** demonstrated in the training room |
+| Graphics | GPU-based Vulkan drawing with batching and GPU-side texture copies; **28,167 frames** unchanged against the established internal test baseline |
+| Sound | Audio plays through the Linux output device; **156.7 seconds** matched a reference capture in the latest reported comparison |
+| Repeatability | More than ten repeat runs produced identical images at the tested points; **7,686 GPU texture results** matched the CPU reference |
+| Performance | Training-room benchmark improved from **0.369× to 0.576× normal game speed** (roughly 22 to 35 simulated frames/s on the tested 60 Hz sequence) |
+| Windows | Cross-platform groundwork and Windows-specific code exist, but **the Windows version has not been compiled or tested** |
 
-### What the Vulkan progress means
+### What the performance numbers mean
 
-A first Vulkan rendering path is running on an NVIDIA RTX 4090. On the tested wrist-strap screen, **767 of 796 frames matched the reference exactly**; 29 fade-transition frames still differed. The GPU path still relies on some work from the slower software renderer. It is **not yet a complete, standalone, real-time rendering engine**.
+The training-room sequence now averages **28.98 ms of processing per frame**, compared with **45.27 ms** before this optimization phase. To sustain the original speed on that 60 Hz test, the target is about **16.67 ms per frame**.
 
-The current images and gameplay experiments belong to the **private development environment**. I have deliberately not published game screenshots or Nintendo assets in this repository.
+The gains came from moving certain image-to-texture conversions to the GPU, avoiding repeated vertex calculations, removing unused software work and dividing the final image conversion across CPU threads. The GPU is not the only limiting factor: CPU graphics preparation and synchronization still need work.
 
-### What comes next
+**A speed of 0.576× is not 57.6% completion of the project.** It is one benchmark result from one scene.
 
-1. **Make Vulkan independent and fast enough** to display the game without relying on software rasterization.
-2. **Open a real desktop window** and provide live keyboard/mouse and gamepad input.
-3. **Adapt every essential Wii Remote action**—horizontal/vertical orientation, pointing, aiming, concentration and movement-based actions—to standard PC controls, with remapping options.
-4. **Test a genuinely controllable training session**, with graphics, audio and responsive controls.
-5. Continue checking visuals, sound and timing against Dolphin, then expand game coverage and prepare Windows support.
+### What has not been validated
 
-## How I check progress
+- A **full-speed, sustained gameplay session**.
+- All Xbox controls: jump, Morph Ball, evasions, first-person aiming, missiles and concentration still need real gameplay verification.
+- Physical Wii Remote **and DolphinBar** operation.
+- Full-game progression, saved-game loading, and all areas or effects.
+- The remaining Vulkan effects, including some fog, indirect texture effects, mipmaps and fade behavior. **29 fade frames still differ** from the software reference in the specific comparison.
+- A compiled Windows build, 4K/ultrawide/HDR/VRR modes, or the planned anti-aliasing choices.
 
-I use **Dolphin as a reference for tests**, not as the final game engine. Matching certain images, audio samples and internal data helps verify the native implementation. I also run repeatable scripted-input tests to distinguish actual game responses from automatic animations.
+In particular, the **28,167 matching frames are an internal before/after regression check**, not proof that every frame matches Dolphin. At two memory checkpoints, **135 and 387 bytes still differ from Dolphin**.
 
-The technical results above come from my **2 November 2026 Claude Code development report**. They have not been independently reproduced as part of this public documentation update. Passing tests and seeing Samus move under a script **does not prove that the entire game works**.
+## Next development priorities
 
-## Planned download and release
+1. **Reach 1.0× stable game speed** by improving CPU-side geometry and lighting, GPU copies and the remaining rendering bottlenecks.
+2. **Complete the missing Wii graphics behavior** while continuing image-by-image comparisons.
+3. **Test real gameplay with an Xbox controller**, including movement, shooting, jumping, Morph Ball, missiles, aiming and motion-based actions.
+4. **Adapt all required Wii Remote gestures** for keyboard/mouse and conventional controllers while keeping optional real Wii Remote support in scope.
+5. **Validate more scenes and game saves**, then pursue Windows builds and optional visual upgrades.
 
-I intend to publish a launcher on this repository's [GitHub Releases page](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. A future installation will require the player's **own copy of *Metroid: Other M***. I have not announced a release date or minimum PC specifications.
+## Development evidence and publication
 
-For the detailed progression and remaining limitations, see the [development log](docs/DEVELOPMENT_LOG.md), [roadmap](docs/ROADMAP.md) and [FAQ](docs/FAQ.md).
+These results come from my **private Claude Code development reports dated 2 November 2026**. I have not independently rerun the underlying binaries for this public documentation update. I distinguish reported tests from features confirmed in a publicly available game.
 
-## Legal and distribution information
+I intend to publish a launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. There is **no release date, public executable or established minimum PC specification**. The eventual setup is intended to use a player's **own local copy of the game**.
 
-*Metroid: Other M Native HD* is an unofficial, independent fan project, not endorsed by Nintendo. Nintendo retains the rights to its games and trademarks.
-
-**This public repository contains documentation only.** It does not provide a game image, translated game code, original assets, encryption keys, private game captures or a playable executable. Some private runtime components adapt code from open-source projects, including Dolphin; any future source or binary distribution must respect their applicable licences and corresponding-source obligations. See [licensing information](docs/FAQ.md#licensing).
+**This repository contains documentation only**, not Nintendo game files, translated game code, assets, private recordings, encryption keys or an executable. The project is unofficial and not affiliated with, endorsed by or approved by Nintendo. Open-source components adapted from Dolphin and other projects will need proper per-file licensing and corresponding-source compliance before any binary distribution. See the [FAQ](docs/FAQ.md#licensing).
