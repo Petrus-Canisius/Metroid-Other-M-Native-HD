@@ -2,75 +2,83 @@
 
 [Project overview](../README.md) · [Roadmap](ROADMAP.md) · [Development log](DEVELOPMENT_LOG.md)
 
-**Updated: 2 November 2026 · Active development · No playable public build**
+**Last reported progress: 2 November 2026 · Interactive Linux prototype · Below normal game speed · No public release**
 
-This page summarizes the latest **Claude Code report from my private project**. Its results have not been independently rerun for this GitHub documentation update. A feature that works in a scripted test is not necessarily ready for a player.
+This page summarizes **private Claude Code development reports**, not an independently reproduced public build.
 
-## At a glance
+## Summary
 
-| Area | What is working or demonstrated | What remains |
+A **real Linux SDL3 game window** now presents Vulkan-rendered images and sound. A physical Xbox Series X controller was recognized in a recorded session. Replaying that session showed **Samus moving and firing in the training room**, compared with a no-input control run.
+
+The immediate obstacle is **performance**: the reported training-room run improved to **0.576×** its intended speed, but is **not yet fluid or ready for general play**.
+
+## Verified or observed within the reported test scope
+
+| Component | Latest reported evidence | Important limit |
 | --- | --- | --- |
-| Game reconstruction | **32,282 functions** translated; **753/753 automated translator tests** passed | Complete gameplay behavior and broader compatibility |
-| Wii functionality | Startup, disc access, menus, sound processing, virtual Wii Remote and essential system services exercised | Remaining edge cases and hardware behaviors |
-| Display and menus | Real game images; wrist-strap image matches Dolphin; OPTIONS, HOME and opening cinematic reached | Fully synchronized validation of every scene |
-| **First gameplay interaction** | **Samus appears in the training area and moves in response to scripted inputs**; a run without those inputs stays still | **Live human control, gameplay validation against Dolphin, a playable window** |
-| Sound | **20.58 seconds** of active audio identical to Dolphin after alignment | Longer-term sound and timing fidelity, audio output in a playable app |
-| Internal timing | Two native executions now produced **identical 24 MiB memory snapshots at the measured points** | Remaining differences against Dolphin and timing-sensitive effects |
-| Graphics acceleration | Initial **Vulkan rendering on an RTX 4090**; **767/796** tested wrist-strap frames matched the software reference exactly | Complete independent GPU renderer, correct fading, missing effects and real-time performance |
-| Windows | Portable platform interface introduced; Windows implementation written | **No Windows compilation or execution has been completed** |
-| Modern display options | Anti-aliasing levels, HD/4K, ultrawide, HDR10 and VRR are documented as goals | Not implemented as user features |
+| Translated game program | **32,282 PowerPC functions**; **753/753 translator tests** passed | Full-game correctness is not established by translation |
+| Original game startup | Warning, logo, OPTIONS, loading, opening cinematic and training room reached | Other scenes and transitions remain untested |
+| Linux graphics | SDL3 window, resize, fullscreen; Vulkan renders frames; batching and GPU-generated copy textures | Missing Wii effects and insufficient full-speed performance |
+| Controller input | A **real Xbox Series X controller** recognized; inputs logged and replayed; Samus **moves and fires** in training area | Jump, Morph Ball, dodge, aiming, missiles and concentration are not validated |
+| Input diagnostics | Optional diagnostics, F3 status information, timestamped input log and replayable DTM data | Logs prove event transmission, but each gameplay action needs separate reaction checks |
+| Audio | Playback to the Linux audio device; **156.7 seconds** matched a reference recording in latest reported comparison | Not proof that audio stays correct throughout the entire game |
+| Repeatability | Over **10 runs** with matching images; **28,167 frames** unchanged in the optimization regression test | This is an internal reference comparison, not all-frame Dolphin equivalence |
+| GPU texture copies | **7,686 texture results** compared against CPU decoding with no mismatches | Limited to formats and scenes exercised |
+| Wii/Dolphin comparison | Sampled RVZ/GX FIFO comparisons remain valid; known memory differences are **135 bytes** at IPC #4 and **387 bytes** at IPC #35 | Memory discrepancies remain unresolved |
+| Windows | Shared platform groundwork and Windows-specific code written | **Not compiled or tested on Windows** |
 
-## What is new in the latest session
+## Performance: training-room benchmark
 
-### 1. The game responds to controls
+The reported test uses the deterministic training-room sequence from **438 to 470 emulated seconds**, approximately 1,918 simulated frames.
 
-The native development program reaches the introduction and **a training scene with Samus, the HUD and subtitles**. To test whether the game actually responds, I compared two runs: one receiving scripted controller inputs and one without them. Both produced the same frames until the first test input at **450 seconds** of emulated time. Immediately afterwards the sequences diverged. In a later frame, Samus moved along a wall in the input-driven run, while she remained still in the other.
+| Optimization stage | Mean frame time | P99 | Emulation speed |
+| --- | ---: | ---: | ---: |
+| Before recent optimization phase | **45.27 ms** | **58.70 ms** | **0.369×** |
+| GPU-side copy-to-texture | 38.0 ms | 45.4 ms | 0.438× |
+| Reuse of transformed vertices | 31.3–32.5 ms | 39.5 ms | 0.514–0.533× |
+| Removed redundant software clear | 30.24 ms | 35.61 ms | 0.552× |
+| Parallel final-frame conversion | **28.98 ms** | **35.13 ms** (P95: 33.14 ms) | **0.576×** |
 
-This is **evidence of input-driven movement in a game scene**, not yet proof that a person can play the game from start to finish. The exact meaning of each gameplay button still needs verification.
+For this sequence, normal speed corresponds to about **16.67 ms per frame** (60 frames per emulated second). The remaining average gap is approximately **12.3 ms per frame**. The latest number is roughly a **56% throughput improvement** over the 0.369× starting point, **not an overall project-completion percentage**.
 
-### 2. Timing has become more reproducible
+### What made it faster
 
-An emulated Wii clock now tracks the simulated execution instead of simply following the computer's clock. Repeated native runs gave **zero differing bytes at the specific 24 MiB memory checkpoints tested**, where the previous comparison varied by 75 bytes. This makes failures and animations easier to investigate.
+- **GPU copy-to-texture:** a compute shader prepares textures used immediately by the game, avoiding many costly CPU/GPU round trips. The reported wait for those texture copies fell from **16.3 to 2.1 seconds** over the benchmark.
+- **Vertex reuse:** a vertex referenced repeatedly by a primitive is transformed once instead of being recalculated for each triangle-strip occurrence. The reported vertex-processing total fell from **30.9 to 19.1 seconds**.
+- **Removed software-only image clear:** the Vulkan path no longer performs an unused clear operation.
+- **Four-thread final-image conversion:** distributes independent image lines while preserving byte-identical output.
+- **Multi-stage Vulkan pipeline:** rendering and copy operations are separated where safe, preserving the observable ordering required by the Wii game.
 
-Against Dolphin, the remaining memory differences fell from **227 to 135 bytes** at checkpoint IPC #4 and from **810 to 387 bytes** at IPC #35. They have **not disappeared**. Some animated effects still have a slightly different phase.
+The reported **GPU work is approximately 6 ms per frame**, while geometry preparation and synchronization still dominate the overall frame time. Simply buying a faster GPU would not necessarily resolve this.
 
-### 3. The first Vulkan renderer runs on the GPU
+### Graphical accuracy
 
-The earlier software renderer remains the reference because it can be compared precisely with Dolphin. The new Vulkan implementation is an **early GPU-based version**.
+The optimization checks retained **28,167 identical frames against the established internal baseline** and **7,686 identical GPU-produced texture results compared with CPU decoding**.
 
-On the wrist-strap screen, **767 of 796 tested frames** were identical pixel-for-pixel to that software reference. The **29 remaining frames** were part of a fade, where blending and dithering still need work. The current GPU path reuses some processing by the software renderer and submits work inefficiently. It **is not yet the final independent or real-time graphics engine**.
+In a separate Vulkan/software comparison, **29 fade-transition frames still differ**; this was a known issue before the optimization phase. Additional implementation work is needed for **indirect texture effects, fog, mipmaps, blending/dithering order and constant destination alpha**.
 
-### 4. Audio and tests improved
+These figures must not be interpreted as proof of complete image equivalence with Dolphin across the game.
 
-The active audio matched Dolphin for **20.58 seconds** sample-for-sample after alignment, up from around 17.1 seconds. The first active sound in the reported run began at **23.360 seconds**, close to Dolphin's **23.415 seconds**. This is not full-game audio validation.
+### Audio, stability and timing
 
-The translator test suite grew to **753 passing tests out of 753**. The translated function count remained **32,282**; sampled RVZ reads and the previously validated GX FIFO comparison remained correct.
-
-### 5. Windows portability has begun
-
-A shared platform layer now separates part of the Linux-specific code from the common game runtime. Windows-specific code has been written, but **has not been compiled**, because the development environment lacked an authorized Windows compiler toolchain. A tool download was blocked by the development environment's permissions; it was **not bypassed**. Windows readiness therefore remains **unverified**.
-
-The planned anti-aliasing choices are also documented: Off, FXAA, SMAA and MSAA subject to graphics and hardware compatibility. **None are implemented yet.**
-
-## What is actually playable?
-
-**Nothing has yet been released or verified as a normal playable PC application.**
-
-The private test harness can now display scenes, produce sound and move Samus in response to **automated inputs**. However, it still lacks a finished desktop window, real-time keyboard/gamepad controls, a fully independent high-performance renderer and proof of a stable interactive session.
-
-It would be inaccurate to call this a playable beta. The first realistic target is an **Ubuntu training-room prototype with direct controls and a game window**.
+- **156.7 seconds** of audio were reported identical to a reference capture; the report does not establish full-game audio correctness.
+- More than **ten** runs produced identical images at the tested points.
+- Memory snapshots from repeated native runs matched at the selected checkpoints, but **Dolphin comparison differences (135/387 bytes) remain open**.
+- The final report states that the application exited cleanly during its repeated tests.
+- Vulkan validation layers were **not run**, as they were not installed in that environment.
+- The most recent optimization session **did not repeat live window/gamepad testing**. Those features were exercised in an earlier reported session.
 
 ## Current priorities
 
-1. Render the game in a desktop window and finish the **standalone Vulkan graphics path**.
-2. Provide live keyboard, mouse and gamepad input.
-3. Adapt **all essential Wii Remote physical actions**—orientation, motion, pointing, first-person aiming and concentration—so a standard controller or keyboard/mouse can complete the game.
-4. Verify a true human-controlled training-room session with graphics and audio.
-5. Preserve reproducible tests, resolve reference differences, then validate the same portable codebase on Windows.
-6. Add optional graphics improvements only after the main gameplay and renderer are reliable.
+1. Profile the current path again; reduce CPU-side vertex/lighting costs and remaining image-copy overhead without breaking determinism.
+2. Achieve **1.0× normal speed in the training room**, followed by frame-time stability checks.
+3. Verify missing GX features and compare across further scenes.
+4. Repeat **hands-on Xbox gameplay tests** once performance is reliable, including actions beyond movement and firing.
+5. Support the required Wii Remote gestures through keyboard/mouse and gamepad, and eventually test a **physical Wii Remote with DolphinBar**.
+6. Expand scene and save-game validation; compile and test Windows when the supported toolchain is available.
 
-## Trust and publication limits
+A reported full or 100% PAL save may become a useful private test fixture, but its contents, import and behavior have **not yet been verified** and are not part of the validated results above.
 
-These observations are drawn from a private development report and have **not** been independently reproduced during this documentation update. Full-game compatibility, Linux real-time playability, Windows execution, physical controllers, HDR, ultrawide, anti-aliasing and variable refresh rate **are not validated features**.
+## Publication boundary
 
-This repository contains only public documentation. There is no public launcher, runtime binary, game image or Nintendo asset.
+**Documentation only.** No game assets, disc images, translated Nintendo code, private captures, encryption keys or playable binaries are published. Results are summarized from private development reports, not independently rerun for this GitHub update. A future distribution requires a rights and open-source licence compliance review.
