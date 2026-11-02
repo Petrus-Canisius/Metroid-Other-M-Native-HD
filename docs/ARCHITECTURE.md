@@ -1,54 +1,61 @@
-# Architecture
+# How the project works
 
-[Home](../README.md) · [Status](BUILD_STATUS.md) · [Roadmap](ROADMAP.md)
+[Project overview](../README.md) · [Current progress](BUILD_STATUS.md) · [Roadmap](ROADMAP.md)
 
-## Translation pipeline
+## Why this is a native port
 
-My initial target is the PAL Wii revision identified locally as R3OP01. The Wii DOL executable and REL module are analyzed and relocated before their PowerPC functions are translated into host-compiled C++.
+*Metroid: Other M* was made for Wii hardware. PCs use a different processor and graphics environment. This project aims to **translate the game's program ahead of time** and provide the missing Wii functions directly inside a native PC application.
 
-```mermaid
-flowchart TD
-    A[Personal Wii game copy, kept local] --> B[DOL and REL analysis]
-    B --> C[Relocations and function discovery]
-    C --> D[Static PowerPC-to-C++ translation]
-    D --> E[Host compilation]
-    E --> F[Native runtime, IOS and Wii hardware interfaces]
-    F --> G[GX command processor]
-    G --> H[Adapted software renderer for reference images]
-    G -. future .-> I[Direct Vulkan GPU renderer]
-    J[Dolphin reference runs] -. timing, audio and XFB comparisons .-> F
+It is **not a Dolphin launcher**. Dolphin is used as a **reference** to check whether the PC version behaves like the original.
+
+In simple terms:
+
+```text
+Personal copy of the Wii game (kept locally)
+                |
+       Analyze and translate
+                |
+      Native PC game program
+                |
+     Wii services and input
+                |
+  Graphics + sound + gameplay
+                |
+   Future Linux / Windows app
 ```
 
-This diagram describes the development pipeline, not a downloadable installer. Dolphin is a diagnostic reference, **not the final execution engine**.
+## What is working in the development environment
 
-## Runtime and input
+**Game program.** The latest report records **32,282 translated functions** and **753 passing translator tests**. The game executes far enough to display the introduction and a training scene.
 
-The native runtime implements portions of memory access, PowerPC special registers, thread switching, interrupts, NAND, IOS and direct read-only RVZ disc access. The Wii Remote emulator has a Bluetooth HCI controller, L2CAP/HID connection and input reports. Scripted input supplies Wii Remote buttons, accelerometer and infrared data during reproducible native tests.
+**Wii services.** The runtime provides emulated versions of the system functions needed by the game, including disc reading, memory, sound, timekeeping and Wii Remote communication. These work on the tested paths, not necessarily across the entire game.
 
-At the 2 November 2026 milestone, **32,282 functions** have been translated, including seven extra indirect-entry points needed to progress after START. The reported translator suite passed **732/732** tests. This remains separate from gameplay correctness.
+**Controls.** A virtual Wii Remote accepts scripted buttons and pointer/movement data. A controlled test showed Samus moving in the training area after an input was sent, whereas she remained still without it. Live player controls are the next step.
 
-The DSP AX implementation processes voices and DMA samples. After aligning output timing, the first **17.09 seconds** of active audio matched Dolphin sample-for-sample. Later divergence remains under investigation.
+**Images.** A software renderer adapted from Dolphin generates images used as a trusted comparison. An **early Vulkan renderer** now uses the GPU to reproduce those images. It matched **767 of 796 frames** in one wrist-strap-screen test; some fade frames still differ. It is not a standalone high-speed renderer yet.
 
-## Software GX renderer: first native images
+**Sound and timing.** The DSP audio implementation generated **20.58 seconds** of samples identical to the Dolphin reference after alignment. The newly simulated Wii clock makes two native runs produce identical memory at the test checkpoints; differences against Dolphin remain.
 
-My CPU-side GX runtime already handles the gather pipe, CP/PE register interfaces, FIFO and command decoding. I have now connected an **adapted Dolphin software rendering pipeline** to that stream. The pipeline performs vertex work, rasterization, TEV, texturing and EFB-to-XFB copies. XFB images can be exported privately for comparison.
+## What still needs to be built
 
-The **first Wii Remote wrist-strap warning image** matched Dolphin across **614,400/614,400 XFB bytes** when copy-filter configuration was aligned. Other early frames, including a black transition and some introduction frames, also matched exactly.
+The first user-facing prototype must combine all these pieces in a **Linux desktop window**, with responsive keyboard/mouse or gamepad controls, sound output and reliable graphics at the correct game speed.
 
-The native harness can display the strap screen, the METROID intro and OPTIONS, and accepts scripted inputs for settings changes, START, HOME and IR pointer movement. These later menu interactions are **native observations only**, not all independently reproduced in Dolphin.
+An important input goal is to **replace mandatory Wii Remote gestures** with PC-friendly actions. For example, aiming with a pointer or switching how the Wii Remote is held should not require a physical motion controller. Actual mappings and gameplay behaviors need testing before they can be considered final.
 
-The software renderer runs at approximately **28 FPS** in the reported full-screen test. It is **not appropriate as the final product renderer**. It remains a reference for future accelerated rendering. I currently favor **direct Vulkan** as the future GPU backend, behind the same graphics interface, but Vulkan rendering has **not yet been implemented**.
+The graphics renderer must eventually stop depending on the software reference for transformation/rasterization, handle the missing visual effects, and use the GPU efficiently.
 
-## Timing and validation boundaries
+## Two operating systems, one codebase
 
-The emulated Wii clock still partly relies on host elapsed time. Software rendering initially affected emulated time and Wii Remote connectivity; that rendering-duration issue was mitigated, but a fully deterministic clock is unfinished. Time-dependent animated effects and input transitions can therefore differ in phase from Dolphin.
+Linux is currently the main development system. A common platform layer has been introduced and Windows-specific code has been written, but the **Windows build has not yet been compiled or tested**. The aim is to reuse the same game translation and Wii logic on both systems, changing only the integration required by each OS.
 
-The reported 24 MiB memory comparisons remain open: **227 differing bytes at IPC #4** and **810 at IPC #35**. The **GX FIFO** remains identical to Dolphin at its validated checkpoint. The emulator is not yet proven equivalent across the full game.
+## Planned visual enhancements
 
-Some GPU readback behaviors, such as bounding-box and pixel-engine counters, are incomplete. The test harness stops rather than inventing values if these registers are read.
+Once core gameplay is reliable, the Vulkan renderer should allow optional HD/4K output, widescreen/ultrawide presentation, adjustable anti-aliasing with an Off setting, and supported HDR/VRR display modes. These are **future goals**, not active features.
 
-## Future output and distribution
+The original timing, composition and controls take precedence over increasing the frame rate or applying effects.
 
-I am planning Windows and Linux builds. Advanced visual goals are 1080p, 1440p and 4K, 16:9 and 21:9, optional anti-aliasing, HDR10, VRR, G-SYNC and FreeSync, with optional configuration and SDR fallback. Anti-aliasing candidates include FXAA and SMAA, plus MSAA if the final GX-to-Vulkan pipeline supports it; TAA needs further feasibility testing. An off setting is required, and the pixel-accurate software reference renderer must not be modified by optional post-processing. They are **not implemented** in the current renderer. Game speed must remain independent of monitor refresh rate.
+## Verification and release
 
-No native gameplay session or distributable launcher is verified. Captures, disc images, translated game code, NAND content and game assets remain private. The Dolphin-derived software graphics code and other reused components require a per-file license audit and applicable GPL obligations before any public software distribution.
+The project uses repeatable controller scripts, reference comparisons with Dolphin, audio comparisons and memory tests. Only specific test cases have been validated so far; **there is no verified playable session or released game**.
+
+All original Nintendo game data, private game captures, translated game code and binaries remain outside this documentation-only repository. Reused open-source code, especially Dolphin-derived components, must meet its licence and source-distribution requirements before any software is published.
