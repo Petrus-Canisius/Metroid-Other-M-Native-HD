@@ -4,6 +4,24 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
+## 2026-11-02: Reproducible Wii timing, early Vulkan output and input-driven Samus movement (latest milestone)
+
+This session moved the native project beyond menus and cutscenes into its **first game scene with input-driven movement**. The private development harness reaches the training area, where Samus, the HUD and French subtitles are visible. Two test runs, one with controller inputs and one without, produced the same images until **450.05 seconds of emulated time**, just after the first scripted input. After that point, the images diverged; Samus moved along a wall in the input run and remained still in the control run. This establishes a response to scripted input in that scene. It **does not** prove that each action button is correctly mapped, that Dolphin reproduces the same gameplay or that a human can play the game in real time.
+
+**Deterministic timing.** The project now uses a simulated Wii clock based on emulated execution, with a way to skip empty waiting periods. At the specific memory checkpoints tested, two native runs produced exactly the same **24 MiB memory contents**; under the earlier host-clock model, the repeat runs differed by 75 bytes. Compared against Dolphin, the outstanding differences fell to **135 bytes at IPC #4** (previously 227) and **387 bytes at IPC #35** (previously 810). Those differences are **still open**, and some time-sensitive scanline effects do not yet align with Dolphin.
+
+**GPU progress.** An initial **Vulkan** graphics path was implemented and tested on an NVIDIA RTX 4090, using some transformed/rasterized data from the software renderer. For the reference wrist-strap screen, **767 of 796 frames** matched the software image exactly. **29 fade frames** still differed because blending/dithering is not yet fully reproduced. The Vulkan implementation is not standalone or optimized and does not yet provide a window for normal play; it is an early correctness milestone rather than a finished accelerated renderer.
+
+**Audio and regression tests.** After aligning the output, **20.58 seconds** of active audio matched Dolphin sample-for-sample (up from about 17.1 seconds). The translator suite passed **753/753 tests**, including 21 new tests; **32,282 functions** remain translated. Sampled RVZ reads, the checked GX FIFO and the native repeatability checkpoints remained sound.
+
+**Windows groundwork.** A common platform interface and initial Windows-specific implementation have been written. They have **not** been compiled or run on Windows. The developer environment prevented execution of a newly downloaded Windows toolchain; no permission bypass was used. A native Windows build is therefore unverified.
+
+**Input and visuals planning.** Optional anti-aliasing (Off / FXAA / SMAA / possible MSAA, with TAA for later study) was documented, **not implemented**. The next input design requirement is to adapt essential Wii Remote orientation, IR pointing and physical gestures to configurable keyboard/mouse and conventional gamepad controls, so a physical Wii Remote will not be required. **Those live control mappings have not yet been implemented or tested.**
+
+**Next milestone:** a standalone efficient Vulkan renderer, a Linux game window, live human controls and a reproducible training-room session with graphics and audio. Full gameplay, modern display upgrades and Windows execution remain future work.
+
+**Evidence boundary:** this entry summarizes the 2 November 2026 Claude Code report. I have not independently run the private game binaries, inspected the images or tested Windows for this public update. No original Nintendo game data, rendered captures or private source code was published.
+
 ## 2026-11-02: First native rendered image and interactive OPTIONS menu
 
 My latest Claude Code console report records the first **genuine software-rendered image from native GX commands**. I adapted Dolphin's software renderer behind the existing GX interface (vertex pipeline, TEV, textures, EFB/XFB copies). The Wii Remote wrist-strap warning XFB matched the Dolphin software renderer **byte-for-byte: 614,400/614,400 bytes**, after aligning copy-filter settings. A previously observed 68,439-byte discrepancy was traced to a reference configuration difference, not assumed to be a rendering-code error.
