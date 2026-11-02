@@ -1,47 +1,76 @@
-# FAQ
+# Frequently asked questions
 
-[Home](../README.md) · [Roadmap](ROADMAP.md)
+[Project overview](../README.md) · [Current progress](BUILD_STATUS.md) · [Roadmap](ROADMAP.md)
 
-## Can I play it?
+## What is Metroid: Other M Native HD?
 
-No. The project is not playable yet. There is no public game release or download.
+An independent fan effort to run the original Wii game **natively on a PC**, adapting the original program to modern hardware. The intention is to preserve the game's identity while offering practical PC controls and optional display improvements.
 
-## Is this a Dolphin launcher?
+## Can I download or play it now?
 
-No. The project translates Wii PowerPC code ahead of time and compiles it for a host CPU. Dolphin is used as a development reference. The native runtime still supplies Wii hardware and service compatibility.
+**No.** There is no public launcher, demo or playable game build.
 
-## Does translating 32,282 functions mean the game works?
+The private development environment now displays Samus in the training area and can move her using **scripted** inputs. However, a normal game window, real-time keyboard/gamepad controls and a stable human-controlled gameplay session have **not** been implemented or validated yet.
 
-No. Translation, compilation, execution and validation are separate milestones. My latest report includes **32,282 translated functions**, a first software-rendered game image matched byte-for-byte with Dolphin, active audio comparisons and native OPTIONS-menu interaction. None of these establishes a fully working or playable gameplay sequence. Some function discovery is speculative.
+## Is it a Dolphin emulator packaged with a game?
+
+**No.** The Wii program is translated for native PC execution, and the missing Wii services are supplied by a custom runtime. Dolphin is used extensively as a **reference for testing**, and parts of its open-source software renderer and other components have been adapted for use in development. This reuse carries licence obligations.
+
+## What has actually been achieved?
+
+The latest private development report, dated **2 November 2026**, records:
+
+- **32,282 translated functions** and **753/753 translator tests** passing.
+- Game startup, menus, intro, sound and a training scene working in scripted native tests.
+- Real rendered images; the first wrist-strap-screen image matched Dolphin exactly.
+- **Samus moving after scripted controller input**, confirmed by comparison with a no-input run.
+- **20.58 seconds** of audio identical to Dolphin after synchronization.
+- A more reproducible emulated Wii clock.
+- An early **Vulkan renderer** on an RTX 4090, with **767/796** tested reference frames matching exactly.
+
+These are **specific test results**, not evidence of a complete or playable game. The documentation update did not independently rerun the private tests.
+
+## Can Samus already be controlled by a person?
+
+**Not yet.** The current proof of movement uses preprogrammed inputs in the native development harness. Live keyboard, mouse and gamepad input, plus a game window, are part of the next development phase. Individual attacks and other gameplay actions still need to be identified and tested.
+
+## Will I need a Wii Remote to play?
+
+The intended answer is **no**. The future keyboard/mouse and conventional Xbox/PlayStation-style gamepad profiles should reproduce all essential Wii Remote actions, including pointing, aiming, changing the remote's orientation and movement-based interactions. Players should be able to complete the game without physical motion controls.
+
+This is a **design requirement**, not a completed feature. Optional physical Wii Remote support may be investigated separately.
+
+## What graphics improvements are planned?
+
+The first objective is a faithful and efficient PC image. Later goals include **1080p, 1440p and 4K**, properly adapted **16:9 and 21:9** where possible, and optional **HDR10, VRR, G-SYNC and FreeSync** on supported systems.
+
+**Adjustable anti-aliasing** is planned with a fully disabled mode. FXAA and SMAA are candidates; MSAA depends on the graphics pipeline, while TAA is only being studied. The exact presets and performance will be verified during future implementation.
+
+These enhancements **are not available yet**. Higher refresh rates must not change the original game's speed or break its behavior.
+
+## Does the Vulkan renderer work?
+
+A **first experimental Vulkan path** works in the private development environment. It matched **767 of 796 frames** for one tested screen; some fade frames still differ. It is not a finished high-performance renderer: it still depends partly on software rendering and does not yet display the game in a usable desktop window.
+
+## Is sound working?
+
+In the latest report, the native audio matched Dolphin for **20.58 seconds** sample-for-sample after aligning the streams. This is a meaningful limited validation, not proof of correct sound throughout the entire game or working live speakers in a future PC application.
+
+## Is Windows 11 supported?
+
+**No, not yet.** Linux is the current development system. Shared platform code and initial Windows-specific functionality have been written, but the Windows code has **not been compiled or executed**. This is an explicit future target, not an available build.
 
 ## Will I need the original game?
 
-The installation goal requires a personal copy of the game. This repository provides no disc images, extracted files, Nintendo assets, private NAND data or keys. A future installer would process required inputs locally. Its design and distribution conditions still need review.
+The planned installer requires a **personal copy of *Metroid: Other M***. This repository does not distribute a disc image, translated game code, Nintendo assets, encryption keys or other original game files. The details of the future local import process remain to be finalized.
 
-## Which platforms and features are supported?
+## When will it be released?
 
-My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. I plan to support 16:9 widescreen and 21:9 ultrawide displays with properly adapted visuals rather than stretching the image. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are also planned. HDR10, VRR, NVIDIA G-SYNC and AMD FreeSync are additional optional goals, with SDR fallback for unsupported setups. None of these display or gameplay features has been validated yet, and I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
+There is **no announced date**. I intend to use the project's [GitHub Releases page](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when a launcher is ready. Development progress is not a release promise.
 
-## Are game images visible now?
+## Can I build or contribute the game code from this repository?
 
-Yes, in my **private native development harness**. I adapted Dolphin's software GX renderer, and the first Wii Remote wrist-strap warning image matched Dolphin on **614,400/614,400 XFB bytes**. Selected introduction frames also matched. This reference renderer is slow and is **not the future GPU-accelerated renderer**. Direct Vulkan is currently recommended, but it is **not implemented yet**.
-
-## Can I interact with menus?
-
-The native harness reacts to **scripted Wii Remote input**. It reaches OPTIONS, changes language and subtitles, opens HOME with an IR pointer and progresses from START to a loading screen and cinematic. These interactions have **not all been matched against Dolphin**, and no controllable gameplay sequence has been validated. There is no playable public build.
-
-## Is sound working now?
-
-In the private harness, the AX DSP produces active audio. After synchronizing the recordings, **17.09 seconds** of output matched Dolphin sample-for-sample. Later audio diverges, likely due to timing, but the cause is not proven. This is a meaningful audio validation within a specific window, not complete audio correctness.
-
-
-## When will it release?
-
-I have not announced a release date. I develop this project in my spare time, so progress may take time. I intend to publish the launcher on this repository's [Releases page](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. I have not published a launcher or playable build yet.
-
-## Can I build or contribute code here?
-
-I currently publish only the project's documentation here. I have not published the development source. Documentation corrections can identify the claim and supporting evidence without attaching private game files. Code contribution instructions will need a separate source publication decision.
+Not currently. This public repository contains **documentation only**. The native game runtime and private tests are not distributed here. Documentation corrections are possible without publishing copyrighted game files or private captures.
 
 ## Licensing
 
