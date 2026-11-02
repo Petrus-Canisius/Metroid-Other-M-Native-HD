@@ -16,19 +16,19 @@ Je développe un projet indépendant visant à faire fonctionner *Metroid: Other
 
 ## État du développement
 
-Le démarrage natif a désormais **franchi l'initialisation du DSP audio AX**. L'exécution se poursuit jusqu'à la limite du banc d'essai sans plantage signalé. Je n'ai encore obtenu ni image de gameplay affichée, ni son audible, ni version jouable.
+**Le projet produit désormais ses premières images natives.** Le moteur graphique logiciel adapté a affiché l'avertissement de la dragonne, avec une image XFB **identique à Dolphin sur 614 400 octets** dans des conditions de filtrage équivalentes. Le runtime atteint aussi le menu **OPTIONS**, réagit aux commandes Wiimote scriptées et exécute la cinématique d'introduction. **Aucune séquence de gameplay n'a encore été validée. Le jeu n'est pas jouable.**
 
-| Domaine | Derniers éléments documentés |
+| Domaine | Derniers résultats rapportés |
 | --- | --- |
-| Traduction PowerPC | 32 275 fonctions retraduites ; 732 tests du traducteur réussis dans l'exécution rapportée |
-| Compilation native | Une génération antérieure de 30 045 fonctions compilée ; reconstruction des 32 275 fonctions rapportée |
-| Runtime Wii | Changements de thread, registres spéciaux, interruptions, IOS, NAND, disque et initialisation Bluetooth exercés |
-| Processeur graphique | GXInit franchi ; 291 commandes GX et 512 Kio de FIFO identiques à Dolphin au 35ᵉ appel IPC |
-| Lecteur RVZ | Lecteur intégré en lecture seule ; vérifications du DOL, de la FST et d'extraits d'un grand fichier |
-| Audio DSP AX | Microcode AX, DMA audio, interruptions et capture WAV implémentés ; 73 903 trames de commandes et 135 750 changements de thread rapportés sur un essai prolongé |
-| État actuel | Pas de plantage signalé avant la limite du banc. Le jeu pourrait attendre une Wiimote absente ; **aucune image affichée et aucun son audible** |
+| Traduction PowerPC | **32 282 fonctions** traduites, dont sept nouvelles entrées indirectes ; **732/732 tests** du traducteur réussis |
+| Runtime Wii | Démarrage, IOS, NAND, lecteur RVZ intégré, ordonnancement et Wiimote émulée exercés |
+| Graphismes | Véritable rendu logiciel GX ; image XFB de la dragonne identique à Dolphin sur **614 400/614 400 octets** |
+| Menus et commandes | Navigation dans OPTIONS, modification des réglages, menu HOME et pointeur IR, puis START et introduction observés **en natif** |
+| Audio | **17,09 secondes** de son actif identiques à Dolphin, échantillon par échantillon après synchronisation |
+| Prochaines étapes | Horloge Wii déterministe, validation reproductible des menus, puis rendu accéléré GPU (Vulkan direct recommandé, non implémenté) |
 
-Mon dernier compte rendu de console du **1er novembre 2026** décrit ces jalons. Je n'ai pas reproduit indépendamment les tests du runtime pour cette mise à jour publique. La capture audio native est silencieuse sur 239 secondes, comme celle de Dolphin sur 250 secondes sans Wiimote connectée. Aucune voix n'étant active, cela **ne valide pas encore le mixage d'un son réel**. Une image soumise au GPU n'est pas une image affichée. Le jeu n'est toujours pas jouable. Voir l'[état technique](docs/BUILD_STATUS.md).
+Ce bilan provient du compte rendu de Claude Code du **2 novembre 2026**. La première image et certaines trames de l'introduction correspondent à Dolphin, mais **toutes les interactions des menus n'ont pas encore été reproduites dans Dolphin**. Le moteur logiciel de référence est lent, environ 28 images/s lors du test rapporté. Il ne constitue **pas le futur moteur graphique définitif**. Je n'ai pas exécuté à nouveau les tests privés pour cette mise à jour documentaire. Voir l'[état technique](docs/BUILD_STATUS.md).
+
 
 ## Principe technique
 
