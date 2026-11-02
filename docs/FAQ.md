@@ -1,88 +1,96 @@
 # Frequently asked questions
 
-[Project overview](../README.md) · [Current progress](BUILD_STATUS.md) · [Roadmap](ROADMAP.md)
+[Project overview](../README.md) · [Current progress](BUILD_STATUS.md) · [Roadmap](ROADMAP.md) · [Development history](DEVELOPMENT_LOG.md)
 
 ## What is Metroid: Other M Native HD?
 
-An independent project to run the original Wii game *Metroid: Other M* **natively on Linux and, eventually, Windows**. The game program is translated for PC execution, and the required Wii hardware/software behavior is reproduced by a dedicated runtime.
+An independent effort to make the original Wii game run **natively on PC**. The Wii's PowerPC program is translated and supported by a PC runtime that recreates essential memory, graphics, audio and input behavior. This is an **unofficial project**, not a Nintendo product.
 
 ## How far has the recompilation progressed?
 
-The latest private report records **32,282 translated PowerPC functions**, with **753 of 753 translator tests** passing. That is an important foundation, but it does **not** mean the complete original game has been functionally validated.
+The latest private reports record **32,282 translated PowerPC functions**, with **753/753 translator tests** passing. This is only a part of the work; full-game behavior has not been validated.
 
-## Can I play it already?
+## Can I play the game now?
 
-**Not as a normal, full-speed PC game.** A **private interactive prototype** runs in a real Ubuntu window using SDL3 and Vulkan, with sound and Xbox controller input. However, the training-room benchmark currently runs at around **0.576× normal speed**. Many gameplay actions and the complete game have not yet been validated.
+**There is no public build or downloadable playable version.** A private Ubuntu prototype opens a real SDL3/Vulkan game window, plays audio and reads a physical Xbox controller. Some actions work, but it remains slower than normal speed and has not been validated across the game.
 
-**There is no public executable, demo or release.**
+## Can Samus already be controlled?
 
-## Is this just Dolphin with a launcher?
+In an earlier physical Xbox Series X controller session, the inputs were recorded and replayed against a no-input run; Samus **moved and fired** in the training room. **Jump, Morph Ball, dodge, first-person aiming, missiles, concentration and complete menus/controls are not yet verified.** Later optimization sessions did not rerun full hands-on gameplay.
 
-No. The goal is ahead-of-time translation of the Wii game's program to native PC code, alongside a Wii-compatible runtime. **Dolphin is used as a comparison reference**. The private project also adapts certain open-source components from Dolphin, which carries licensing obligations.
+## How fast is the native prototype?
 
-## Can Samus be controlled by a real gamepad?
+In the latest session, **the same, unchanged runtime** measured **0.879–0.917× normal speed**, **0.897× average over five runs**, in the deterministic training-room benchmark. Its average processing time was approximately **18.58 ms/frame**, versus about **16.67 ms** required for the tested 60 Hz simulation pace.
 
-A physical **Xbox Series X controller** was recognized in a private Ubuntu test. Its inputs were recorded, then replayed and compared with an identical no-input run. The result showed **Samus moving and firing in the training area**.
+An earlier session reported only **0.835–0.848× with the same code** under different host conditions. Therefore **0.897× is an observed benchmark, not proof of a newly coded optimization or stable 0.90× gameplay**. Measured performance may change with the background workload, CPU/GPU clock behavior and cache state.
 
-That is more than a scripted-only demonstration, but it is **not a complete validation of gamepad gameplay**. Jumping, Morph Ball, dodge, first-person aiming, missiles and concentration still need physical testing. The latest performance optimization session did not rerun that gamepad/window test.
+## What are the most important graphics and CPU improvements?
+
+Recent retained improvements include GPU texture copies, caching repeated vertex and lighting calculations, two ordered geometry workers, a faster TEV shader, bounded Vulkan image reuse and **parallel triangle assembly and clipping**. The latter produced a repeatable **~0.54 ms/frame** gain in an alternating A/B comparison.
+
+A proposed optimization that moved geometric slope calculation to worker threads was **reverted** after a **~0.21 ms/frame average slowdown**. Keeping correct images is necessary, but not sufficient, to justify more parallel processing.
+
+## Why does the game sometimes stutter at startup?
+
+An isolated shader/pipeline-cache experiment measured **514 ms for the first frame with an empty cache**, versus **82 ms with a warm cache**. Pipeline creation itself took **436 ms cold** versus **1 ms warm**. This explains a previously observed ~520 ms startup spike in that test. It **does not prove that the game has no other stutters**, and shader preparation remains a future optimization task.
+
+## Are the graphics fully accurate?
+
+Not yet. **28,167 frames** matched the established **internal regression baseline** through the reported optimization tests. Some **7,687 GPU-produced texture results** were byte-identical to the CPU reference in their tested scope.
+
+In a separate Vulkan/software comparison, **29 fade frames** still differed, with an observed **98.9016% pixel agreement** for that sample. Some Wii features, including indirect texturing, fog, mipmaps and blend/dither ordering, remain incomplete. **Internal regression identity is not the same as exact matching against Dolphin**.
+
+## Is the audio working?
+
+The Linux prototype produces sound. The latest reported reference comparison found **156.73 seconds** matching a particular reference capture. This does not establish full-game synchronization or correct sound effects in every scene.
+
+## Is the project based on Dolphin?
+
+Dolphin is used as an **external correctness reference** and some of its **open-source components have been adapted** into the private native runtime. The objective remains a **native translated game with a dedicated runtime**, not a repackaged emulator. Reused code must comply with its relevant open-source licences.
 
 ## Will I need a Wii Remote or DolphinBar?
 
-The intended finished game should be **fully playable with keyboard/mouse or a conventional Xbox/PlayStation-style gamepad**, without mandatory physical gestures. The plan is to convert Wii Remote orientation, movement and infrared pointing into PC-friendly control actions.
+The intended release should be completable with **keyboard/mouse or a conventional Xbox/PlayStation-style controller**, by mapping the necessary Wii Remote orientation, pointer and motion actions to regular controls.
 
-Support for a **real Wii Remote with Mayflash DolphinBar** remains a separate optional goal. Physical DolphinBar operation is **not yet implemented and validated**.
+An **original Wii Remote with Mayflash DolphinBar** is an optional future goal. It has **not been implemented and tested** as a completed feature.
 
-## Is Vulkan working, and what performance does it achieve?
+## Is a 100% PAL save available for tests?
 
-Yes, an **experimental Vulkan backend renders into a real Linux desktop window**. It is increasingly GPU-driven, including GPU-side copy-to-texture conversions, but substantial CPU-side graphics work and missing Wii effects remain.
+A private **European R3OP Wii SD save export** has been identified. The `data.bin` file is **113,408 bytes**, and metadata indicates **three encrypted save slots**.
 
-On the reported training-room benchmark, speed improved from **0.369× to 0.576×** normal game speed, and average processing time improved from **45.27 ms to 28.98 ms per frame**. The next objective is **stable 1.0×**, not simply more frames shown at an incorrect simulation speed.
+The advertised **100% completion has not been verified**; neither import into an isolated Dolphin profile nor native loading has been completed. It is intended to help test later scenes **once the core engine is sufficiently stable**. The original save remains private and untouched.
 
-## Have the graphics been verified?
+## Is all of Metroid: Other M working?
 
-On the latest internal optimization tests, **28,167 frames stayed identical to their established internal baseline**, and **7,686 GPU-produced copy textures** matched CPU decoding. This helps catch optimization regressions.
+**No full-game compatibility claim is justified.** Native execution has reached menus, introduction and the training room, with only selected controls proven. Further rooms, bosses, cutscenes, inventory operations, saves, game progression and long gameplay sessions require validation.
 
-In a separate Vulkan/software renderer comparison, **29 fade frames still differ**. Other effects including indirect texturing, fog, mipmaps and some blending behavior are incomplete. Matching an internal baseline is **not the same as proving every frame equals Dolphin**.
+## Is Windows 11 supported?
 
-## What about audio?
+Not currently. The project has a portable framework and some Windows-specific source, but **no compiled or tested Windows build** has been reported.
 
-Sound plays through the Linux audio output. The latest private report says **156.7 seconds matched a reference audio capture** in the tested context. The tests do not establish that all of the game's music, effects and timing work perfectly in every scene.
+## Will there be 1080p, 4K, ultrawide, HDR and anti-aliasing?
 
-## Does the entire game work?
+These are **future goals**, not current features: 1080p/1440p/4K, carefully adapted 16:9 and possibly 21:9, optional anti-aliasing (Off, FXAA, SMAA and MSAA if feasible), HDR10 and VRR/G-SYNC/FreeSync. Fidelity and stable normal-speed gameplay come first.
 
-**That has not been established.** The reported native runs reach the menus, intro and a training room. Later areas, save loading, progression, all abilities, and long interactive gameplay sessions still need testing.
+## What computer hardware will I need?
 
-A European PAL save advertised as 100% complete has been identified as a possible **future private test fixture**. Its actual contents, compatibility and native import have not yet been validated.
+**Minimum hardware requirements have not been determined.** Development measurements currently use a high-end RTX 4090 system, so they cannot establish performance on lower-end PCs.
 
-## Will it work on Windows 11?
+## Will I need to own the game?
 
-Windows is a major target, but **not supported today**. A platform abstraction and some Windows-specific code have been written, but there is no reported Windows compilation or working Windows build.
+The eventual local setup is intended to use a player's **own copy of the Wii game**. This repository distributes **no game image, copyrighted assets, decrypted save, encryption keys or translated Nintendo game code**.
 
-## Will there be HD, 4K, ultrawide or HDR support?
+## Can I build or contribute to the runtime?
 
-These remain **planned, optional features**. The roadmap includes faithful 16:9, possible 21:9 without stretching, 1080p/1440p/4K, adjustable anti-aliasing (Off; FXAA/SMAA candidates; MSAA subject to feasibility), and optional HDR10/VRR/G-SYNC/FreeSync.
-
-None has been released or validated as a user-facing feature. Preserving game speed, picture quality and compatibility comes first.
-
-## What hardware will be required?
-
-**No minimum system requirements have been measured and confirmed.** The private development benchmarks use a powerful RTX 4090 system, but that does not establish the requirements of a finished optimized build.
-
-## Will I need the original game?
-
-The planned local setup is designed around a player's **own copy of *Metroid: Other M***. No Wii game image, translated Nintendo code, assets, keys, private NAND data or saved-game files are distributed here.
+The **public repository contains documentation only**; the runtime is private. There is no downloadable build or public source checkout for the game. Public code release would need an explicit decision and a detailed open-source licence review.
 
 ## When will it be released?
 
-There is **no announced release date**. I intend to use the project's [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when a launcher is ready. There is no public downloadable game today.
+There is **no release date**. [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) may be used for a future launcher if a lawful and sufficiently tested distribution becomes ready.
 
-## Can I build the game or contribute code here?
+## How are the development claims checked?
 
-This is currently a **documentation-only repository**. The private native runtime and its test fixtures are not published. Code build/contribution instructions would require a separate publication decision and a full licensing review.
-
-## How trustworthy are the progress figures?
-
-They summarize **private Claude Code development reports dated 2 November 2026**. They have not been independently reproduced as part of these public documentation edits. Different figures refer to different scopes: speed in one training scene, audio for a particular reference recording, and image equality for specific regression checks. See [current status](BUILD_STATUS.md).
+The figures summarize **private Claude Code reports**, not independent verification of a public binary. Each statement is scoped: training-room speed is not full-game speed, an internal image regression is not whole-game Dolphin equivalence, and a selected audio capture is not all audio. The latest experiments also show that **the same code may benchmark differently on different days**. See [Current development status](BUILD_STATUS.md) for measured details and uncertainty.
 
 ## Licensing
 
