@@ -4,6 +4,20 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
+## 2026-11-02: First native rendered image and interactive OPTIONS menu
+
+My latest Claude Code console report records the first **genuine software-rendered image from native GX commands**. I adapted Dolphin's software renderer behind the existing GX interface (vertex pipeline, TEV, textures, EFB/XFB copies). The Wii Remote wrist-strap warning XFB matched the Dolphin software renderer **byte-for-byte: 614,400/614,400 bytes**, after aligning copy-filter settings. A previously observed 68,439-byte discrepancy was traced to a reference configuration difference, not assumed to be a rendering-code error.
+
+Several additional transition and animated introduction frames also matched exactly. The CRT-style scanline animation can differ in phase because the current emulated time still partly follows the host clock. The renderer achieved around **28 FPS** on the reported full-screen test and is a **reference-only implementation**, not the final accelerated renderer. **Direct Vulkan** is favored for future GPU acceleration but is not yet implemented.
+
+Scripted Wii Remote inputs drive the native **OPTIONS menu**, where the cursor, language and subtitle values change. Pressing **1/START** reaches a loading screen and the opening cinematic. **HOME** opens the system menu and the IR pointer moves. The native harness also records and replays **DTM** input. Dolphin matched the wrist-strap screen and selected intro frames, but did **not** progress to OPTIONS in the lengthy software-renderer replay. Consequently, the native menu interactions are **not yet reference-validated**, and there is **no validated playable gameplay**.
+
+A missing translated indirect-entry function at `0x8013F4C8` initially blocked progression after START. Analysis identified **seven** genuine extra function entries, bringing the translated count to **32,282**. The updated build passed **732/732 translator tests**. The REL image and GX FIFO checks retained their known exact matches; sampled RVZ reads remained exact. The latest memory comparisons still show **227 differing bytes at IPC #4** and **810 at IPC #35**. Audio matched Dolphin sample-for-sample for **17.09 seconds** after alignment.
+
+**Next work:** a deterministic Wii clock for aligned input and frame comparisons, then a GPU-accelerated Vulkan renderer and a validated first controllable gameplay sequence.
+
+**Evidence boundary:** these results come from my local Claude Code report. I did not rerun the runtime, inspect private screenshots or reproduce the frame and audio comparisons for this public update. No game captures or Nintendo data were uploaded.
+
 ## 2026-11-01: AX DSP processing passed; extended native run reaches watchdog
 
 My subsequent Claude Code report states that the **AX Wii DSP microcode** is implemented at a high level, including command frames, audio voice processing, stereo DMA capture and scheduled DSP/ARAM interruptions. The implementation reuses Dolphin-derived code with notices retained. A new **context-switch correction** fixed a nonvolatile register guard that had overwritten registers after `OSLoadContext` restored a different fiber. The reported extended run completed **135,750 thread switches** and **73,903 audio command frames** before the configured watchdog cutoff, without a reported crash.
