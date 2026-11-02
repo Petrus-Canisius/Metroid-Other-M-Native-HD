@@ -1,61 +1,60 @@
-# How the project works
+# How Metroid: Other M Native HD works
 
 [Project overview](../README.md) · [Current progress](BUILD_STATUS.md) · [Roadmap](ROADMAP.md)
 
-## Why this is a native port
+## A native adaptation, not a bundled emulator
 
-*Metroid: Other M* was made for Wii hardware. PCs use a different processor and graphics environment. This project aims to **translate the game's program ahead of time** and provide the missing Wii functions directly inside a native PC application.
+The Wii runs a PowerPC program and uses dedicated graphics, audio and operating-system services. A modern PC is very different. This project **translates the game program ahead of time** and provides the Wii functions it needs through a native PC runtime.
 
-It is **not a Dolphin launcher**. Dolphin is used as a **reference** to check whether the PC version behaves like the original.
-
-In simple terms:
+**Dolphin is a reference for compatibility tests**, not the final launcher. Some Dolphin open-source components have been adapted within the private implementation and remain subject to their respective licences.
 
 ```text
-Personal copy of the Wii game (kept locally)
-                |
-       Analyze and translate
-                |
-      Native PC game program
-                |
-     Wii services and input
-                |
-  Graphics + sound + gameplay
-                |
-   Future Linux / Windows app
+Player's own Wii game copy (kept locally)
+               |
+        Recompilation pipeline
+               |
+      Native PC game execution
+               |
+   Wii runtime, clock and memory
+       /          |          \
+  PC controls   Audio    GX graphics
+       |          |          |
+ Virtual remote  Output  Vulkan rendering
+               |
+        Linux window today
+     Windows build in the future
 ```
 
-## What is working in the development environment
+## What already runs
 
-**Game program.** The latest report records **32,282 translated functions** and **753 passing translator tests**. The game executes far enough to display the introduction and a training scene.
+**Game execution.** The latest reports show **32,282 functions** translated from the Wii program, with **753/753 translator tests passing**. The native program reaches the menus, opening cinematic and a training-room scene.
 
-**Wii services.** The runtime provides emulated versions of the system functions needed by the game, including disc reading, memory, sound, timekeeping and Wii Remote communication. These work on the tested paths, not necessarily across the entire game.
+**Wii runtime.** Disc access, emulated time, memory, IOS-related services and a virtual Wii Remote provide the environment the game expects. This is not yet proven for every scene or hardware behavior.
 
-**Controls.** A virtual Wii Remote accepts scripted buttons and pointer/movement data. A controlled test showed Samus moving in the training area after an input was sent, whereas she remained still without it. Live player controls are the next step.
+**Player controls.** The Linux application uses SDL3 to accept real keyboard/mouse and gamepad input. In one physical Xbox Series X controller session, recorded inputs were fed back into the virtual Wii Remote. Comparing the replay with a no-input run confirmed **movement and beam firing by Samus**. Other actions have not yet been demonstrated. A future goal is to translate every required physical Wii Remote gesture to regular PC inputs and support an optional real Wii Remote through DolphinBar.
 
-**Images.** A software renderer adapted from Dolphin generates images used as a trusted comparison. An **early Vulkan renderer** now uses the GPU to reproduce those images. It matched **767 of 796 frames** in one wrist-strap-screen test; some fade frames still differ. It is not a standalone high-speed renderer yet.
+**Graphics and window.** A software GX renderer is retained to check fidelity. A **Vulkan GPU renderer** now draws into a real SDL3 window and handles batches of graphics commands. Recent optimizations avoid repeated vertex transformation, generate certain copy textures on the GPU and parallelize final-image conversion. These changes improved the training-room benchmark to **0.576× normal speed**, but more speed and several Wii effects are still needed.
 
-**Sound and timing.** The DSP audio implementation generated **20.58 seconds** of samples identical to the Dolphin reference after alignment. The newly simulated Wii clock makes two native runs produce identical memory at the test checkpoints; differences against Dolphin remain.
+**Sound.** Audio plays through the Linux audio device. A recent reported comparison found **156.7 seconds** identical to a reference recording in the tested sequence. That does not establish complete-game audio fidelity.
 
-## What still needs to be built
+**Reliability.** Repeated native executions are reproducible at the tested points. **28,167 internal test frames** remained unchanged through optimization; **7,686 GPU-made textures** matched CPU decoding. This protects against regressions, but **does not mean all game frames match Dolphin**. Memory differences of **135 and 387 bytes** remain at two Dolphin comparison checkpoints.
 
-The first user-facing prototype must combine all these pieces in a **Linux desktop window**, with responsive keyboard/mouse or gamepad controls, sound output and reliable graphics at the correct game speed.
+## Why performance is still limited
 
-An important input goal is to **replace mandatory Wii Remote gestures** with PC-friendly actions. For example, aiming with a pointer or switching how the Wii Remote is held should not require a physical motion controller. Actual mappings and gameplay behaviors need testing before they can be considered final.
+A modern GPU is much faster than Wii-era graphics hardware, but the original game uses particular patterns of image copying, memory access and synchronization.
 
-The graphics renderer must eventually stop depending on the software reference for transformation/rasterization, handle the missing visual effects, and use the GPU efficiently.
+The current bottleneck is not simply raw GPU drawing power. The runtime still spends too much time preparing geometry and lighting calculations, processing image copies and waiting for dependent operations.
 
-## Two operating systems, one codebase
+The latest training test averages **28.98 ms per frame**, with approximately **16.67 ms per frame** needed for its original 60 Hz pace. Work remains on the CPU-side graphics preparation and related dependencies. Improvements must preserve the Wii's observable order of operations.
 
-Linux is currently the main development system. A common platform layer has been introduced and Windows-specific code has been written, but the **Windows build has not yet been compiled or tested**. The aim is to reuse the same game translation and Wii logic on both systems, changing only the integration required by each OS.
+## What is still missing
 
-## Planned visual enhancements
+The next goals are **stable 1.0× speed**, correctly implemented outstanding graphics effects, full gamepad/keyboard mappings, physical Wii Remote testing and validation of more scenes and saves.
 
-Once core gameplay is reliable, the Vulkan renderer should allow optional HD/4K output, widescreen/ultrawide presentation, adjustable anti-aliasing with an Off setting, and supported HDR/VRR display modes. These are **future goals**, not active features.
+A shared platform foundation has been developed, but **Windows-specific code has not yet been compiled or tested**. Linux is currently the only platform with reported interactive execution.
 
-The original timing, composition and controls take precedence over increasing the frame rate or applying effects.
+Future 1080p/1440p/4K, 16:9/21:9, configurable anti-aliasing, HDR10 and VRR are **not yet verified features**. Smooth gameplay and fidelity come first.
 
-## Verification and release
+## Public code and licences
 
-The project uses repeatable controller scripts, reference comparisons with Dolphin, audio comparisons and memory tests. Only specific test cases have been validated so far; **there is no verified playable session or released game**.
-
-All original Nintendo game data, private game captures, translated game code and binaries remain outside this documentation-only repository. Reused open-source code, especially Dolphin-derived components, must meet its licence and source-distribution requirements before any software is published.
+**This public repository is documentation only.** The private build, Nintendo-derived translated code, personal game files, private recordings, disc/NAND data and captures are not published. Any future distribution must satisfy applicable third-party licences, especially where source code has been adapted from Dolphin, and the project's other legal obligations.
