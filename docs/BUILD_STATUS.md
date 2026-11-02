@@ -2,49 +2,56 @@
 
 [Home](../README.md) · [Development log](DEVELOPMENT_LOG.md) · [Roadmap](ROADMAP.md)
 
-**In Active Development · Not Playable Yet · No Public Release**
+**In Active Development · Native Images Rendered · Not Playable Yet · No Public Release**
 
-I updated this page from my **1 November 2026 Claude Code console report**. Its reported builds and comparisons have not been independently reproduced for this documentation update. I have not performed a new runtime test here.
+I updated this page from my **2 November 2026 Claude Code console report**. The technical tests below are **reported from the private development workspace**, not independently rerun during this public documentation update.
 
 ## Evidence levels
 
-**Generated** means translation output exists. **Compiled** means native objects were built. **Executed** means code ran in the native development harness. **Validated** means a specific test or comparison passed within its stated limits. **Playable** requires a tested interactive game session. These stages are not interchangeable.
+**Translated** means host-target code was generated. **Compiled** means host binaries or objects were built. **Executed** means a path ran in the native harness. **Validated** means a specific reference comparison passed under stated conditions. **Playable** requires a tested interactive gameplay sequence. These are separate levels.
 
-| Area | Latest reported result | Limit |
+## Latest results
+
+| Area | Reported result | Validation boundary |
 | --- | --- | --- |
-| PowerPC translation | 32,275 functions retranslated; translator unit tests 732/732 | Translation coverage alone does not prove correct gameplay |
-| Earlier compilation | 30,045 functions successfully compiled in an earlier generation | This historical milestone is separate from the later full retranslation |
-| Native scheduling and SPR | Thread-switch comparisons, Dolphin-derived initial SPR values, HID0 translation fix | Timing and floating-point context differences remain |
-| Graphics command processor | **GXInit passed**. 291 GX commands decoded and matched; 512 KiB FIFO compared byte-for-byte with Dolphin at IPC #35 | GX command processing is not graphical rendering |
-| GX capture | Binary command capture and inspection tools implemented | Private captures are not published |
-| Wait loops and interrupts | 103 polling loops instrumented, including 48 with side-effect-free calls; around 35,000 interrupts during a later boot run | Scheduling fidelity is not yet fully established |
-| IOS filesystem / NAND | Permissions, directory handling, metadata and writes exercised; startup SYSCONF matched Dolphin byte-for-byte | Wider filesystem behavior not comprehensively validated |
-| IOS disc / RVZ | Integrated read-only RVZ reader; DOL, FST and sampled reads from a 763 MiB file matched; disc timing model and partition reads exercised | All discs, offsets and timing cases have not been exhaustively verified |
-| Bluetooth | HCI controller initialized with five registered virtual remotes and none connected; native startup progressed past initialization | Complete Wii Remote L2CAP/HID connection and physical controller support are not available |
-| AX Wii audio DSP | AX HLE command processing, audio DMA, deferred DSP/ARAM interrupts and WAV capture implemented; 73,903 command frames at 96 voice slots per frame reported | Captured audio is silent; no active voice or real-sound sample comparison yet |
-| Thread switching across interrupts | Context restore bug involving nonvolatile register guard reportedly corrected; 135,750 switches recorded in extended run | Full scheduling fidelity not yet established |
-| Extended native execution | AX microcode loading passed; boot ran to the harness watchdog limit without a reported native crash | Likely waiting for a disconnected Wii Remote; interactive gameplay not demonstrated |
-| GPU submissions | Around 1,290 frames submitted to the emulated GPU in one reported run | **Zero confirmed rendered images**; no graphics rendering stage exists yet |
-| Display enhancements | HDR10, VRR, G-SYNC, FreeSync, 16:9 and 21:9 recorded as optional goals | None implemented or validated |
+| PowerPC translation | **32,282 functions** translated, including **7 newly identified indirect-entry functions**; **732/732** translator tests passed | Translation is not proof of complete game correctness |
+| Earlier object build | 30,045 objects compiled in a previous generation | Historical result, not the current 32,282-function build count |
+| GX / FIFO | Reference GX stream retained; FIFO at IPC #35 matches Dolphin across **524,256 bytes** | CPU-side command processing; independent of screen output |
+| Software GX renderer | Dolphin-derived software pipeline adapted to the native runtime: vertices, rasterization, TEV, textures, EFB copies and XFB export | Reference renderer only, about **28 FPS** in the reported full-screen test |
+| **First rendered game image** | Wii Remote wrist-strap warning: **614,400 of 614,400 XFB bytes identical to Dolphin**, with equivalent copy-filter settings | Exact match of that XFB image, **not** a validation of all scenes |
+| Additional frames | Black transition and some animated intro frames matched Dolphin's XFB exactly | A scanline animation differs in phase due to timing |
+| Wii Remote input | Scripted input and DTM recording/replay; OPTIONS navigation, settings changes, HOME/IR pointer and START-to-intro observed natively | Full menu interactions not yet reproduced against Dolphin |
+| Audio DSP AX | After synchronization, **17.09 seconds** of active audio matched Dolphin sample-for-sample | Later audio differs due to a suspected timing mismatch, not yet proven |
+| Disc and filesystem | Exact sampled RVZ reads, IOS/NAND and Bluetooth paths retained | Full-game and all-hardware behavior not demonstrated |
+| Extended run after START | Loading screen then opening cinematic ran natively, with audio and EFB copies | No validated controllable gameplay sequence |
+| Planned display technology | Vulkan accelerated renderer, 1080p/1440p/4K, 16:9/21:9, HDR10, VRR, G-SYNC and FreeSync | **Not implemented or validated**; advanced modes remain optional |
 
-## Audio validation boundary
+## Menu and image validation detail
 
-In my latest development report, the native harness captured **239 seconds of silent audio**. Dolphin, with the same no-Wii-Remote configuration, was also silent for **250 seconds**. The two observations are consistent, but **no active voice was observed** and no sample-by-sample comparison of actual game audio was possible. I do not claim the mixer or audible sound output is validated. The DSP AX command path is exercised, not equivalent to proven audio fidelity.
+The first wrist-strap screen is a genuine game image produced from the native GX command stream. The XFB result matched Dolphin byte-for-byte (614,400 bytes). A first difference of 68,439 bytes was investigated and resolved by aligning Dolphin's **DisableCopyFilter** setting to the intended native copy-filter behavior. Several additional frames matched exactly.
 
-The same report states that the corrected thread-resume path completed **135,750 switches** and processed **73,903 AX command frames**, with no crash before the configured watchdog cutoff. These numbers are reported from a local development run, not independently reproduced in this documentation update.
+The native harness reached the **OPTIONS menu**. Scripted input changed language, subtitles and cursor position. **1/START** advanced to loading and the opening cinematic. **HOME** opened the system menu with an IR pointer. These latter interactions were **observed natively**, but Dolphin's slow software-renderer replay did not reach the same OPTIONS point for full comparison. This is not a claim of reference-validated gameplay.
 
-## Memory comparison boundaries
+The software renderer is a diagnostic reference. The current **direct Vulkan** approach is recommended as a future GPU backend, **not yet implemented**. The current software reference is too slow for the intended product.
 
-At the fourth IPC call following the main-thread resumption, the latest report again shows **223 different bytes in a 24 MiB MEM1 comparison**. Earlier observations of the same checkpoint varied between **141 and 233 bytes** across revisions. The differences were attributed to timestamps, FPU ownership/context and interrupt timing. Two executions of the same native binary reportedly differed only in timestamp fields (75 bytes).
+## Runtime consistency and open issues
 
-These discrepancies are **classified but not resolved**. The host-clock-driven time model remains an identified source of nondeterminism. I do not claim full memory equivalence or complete scheduling fidelity.
+- **IPC #4, 24 MiB MEM1:** **227 bytes differ**, within previously investigated classes (timestamps, lazy FPU ownership and interrupt timing), but the mismatches **remain unresolved**.
+- **IPC #35:** **810 bytes differ**, also still open.
+- **GX FIFO at IPC #35:** identical reference bytes, a separate and successful comparison.
+- **Audio:** 17.09 seconds identical after aligning the first nonzero sample. Subsequent divergence is suspected to arise from differing event times. The hypothesis has **not been demonstrated**.
+- **Wii clock:** some simulation still depends on host elapsed time, so animation phases and input timing may differ between native and Dolphin.
+- **GPU reads:** bounding-box and pixel-engine counter register behavior is incomplete and explicitly stops the test if used.
+- **Other Wii Remote modes and extensions:** not fully ported.
 
-At IPC #35, the GX command stream still matched Dolphin. A later report lists **810 different MEM1 bytes**, compared with 881 in an earlier run; these mismatches remain open. Full MEM1 snapshots captured at different points must not be presented as valid divergence measurements.
+Seven additional function entry points were detected and translated after a native indirect jump to `0x8013F4C8` prevented progression after START. The resulting **32,282** translated functions passed the reported regression suite.
 
-## Next technical step
+## Next engineering milestone
 
-**The AX microcode block has been passed.** The next development dependency is emulated **Wii Remote connectivity**, including L2CAP/HID and input reports, so the boot can progress beyond the apparent no-controller waiting state. Audible AX mixing still needs an active-voice reference test. Graphics rendering, controller hardware support and full runtime timing validation are outstanding.
+My next priority is a **deterministic emulated Wii clock**, followed by synchronized native/Dolphin DTM playback and frame-by-frame menu comparisons. A **Vulkan GPU renderer** can then be built behind the existing graphics interface while keeping the software renderer as a fidelity reference. The first validated controllable gameplay sequence has not yet been reached.
 
-## Public release status
+## Publication boundary
 
-I publish documentation and a fan-made banner here, not runtime source, translated game code, Nintendo assets, disc images, private NAND data or encryption keys. There is no playable release or launcher. I intend to publish a launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. Linux is my current development environment, with Windows planned.
+This is a **documentation-only** repository. I do not publish translated Nintendo game code, game images or captures, private NAND/disc data, keys, source or binaries from the private runtime. The launcher is planned for [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases), but no public download or release date exists. Linux is the current development environment; Windows remains a target.
+
+The software renderer includes Dolphin-derived components. Any future public binary/source distribution will require a comprehensive GPL and per-file license review.
