@@ -4,7 +4,38 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
-## 2026-11-02: Reproducible Wii timing, early Vulkan output and input-driven Samus movement (latest milestone)
+## 2026-11-02: Further Vulkan optimization: training room reaches 0.576× (most recent report)
+
+My latest Claude Code report records a substantial improvement in the **training-room performance benchmark**: **0.369× to 0.576× normal emulated speed**. The average frame processing time fell from **45.27 ms to 28.98 ms**, with P99 falling from **58.70 ms to 35.13 ms**. The benchmark covers approximately 1,918 simulated frames between 438 and 470 emulated seconds. This is a measured gain in one scene, **not a claim of stable full-speed gameplay**.
+
+Four main improvements were implemented and committed:
+
+- **GPU-side copy-to-texture** (`5a31680`). A Vulkan compute shader produces reused image textures directly on the GPU for matching source, format and dimensions, with memory-coherency checks and a fallback. The tested formats were RGB565 and RGBA8 including half-scale copies. Reported copy-related waits fell from **16.3 s to 2.1 s**.
+- **Reuse of transformed vertices** (`0f4a848`). Repeated references to a vertex in one primitive no longer force repeated transformations. The measured vertex-transform stage fell from **30.9 s to 19.1 s**.
+- **Remove an unused software clear in Vulkan mode** (`fb257f3`).
+- **Parallel final-image conversion on four threads** (`f34e9ed`), preserving identical output.
+
+The report also lists final documentation or validation commit `27cbcde`. Previously developed Vulkan batching, separate rendering/copy threads and in-flight submissions remain part of the optimized path.
+
+**Correctness checks:** **28,167 frames** remained identical to the established internal baseline through the optimizations, **7,686 GPU copy-texture results** matched CPU decoding, and more than **ten** repeated runs produced matching images at the observed checkpoints. The translator tests remain **753/753** and the input-adaptation tests **3/3**. The runtime's previously reported audio comparison extends to **156.7 seconds** matching a reference capture. This report does not indicate new physical-controller tests or complete audio validation.
+
+The Vulkan/software comparison still differs on **29 fade frames**. Indirect texturing, fog, mipmaps, dithering/blending order and constant destination alpha remain incomplete. **135 and 387 bytes** still differ from Dolphin at the two known memory checkpoints. Vulkan validation layers were not run in the optimization session because they were not installed.
+
+**Next priority:** reduce the CPU-side cost of vertex lighting/transformation and remaining copy encoding, then optimize shaders only where profiling shows meaningful benefit. The report estimates that approximately **12.3 ms** must still be removed from the average 28.98 ms/frame to reach the **16.67 ms/frame** budget for normal speed in this benchmark. The player-facing window and Xbox input existed from earlier work, but were **not retested in this optimization session**.
+
+**Evidence boundary:** all details come from the private Claude Code report; no independent execution or copyrighted game data was used for this public documentation update.
+
+## 2026-11-02: First real Linux game window, Xbox controller and gameplay diagnostics (previous milestone)
+
+An earlier Claude Code report records the **first real Linux application window** using SDL3 and Vulkan, with fullscreen switching, resizing and sound through the Ubuntu output device. A **physical Xbox Series X controller** was detected during a test session. The runtime logged **509 virtual Wii Remote state changes** derived from controller input, and generated a replayable input recording and timestamped diagnostics.
+
+A controlled replay compared the recorded controller session with a run receiving no such inputs. Images were initially identical, then diverged after the recorded input became active. The replay showed **Samus moving and a beam shot**, while the no-input run left her stationary. This is evidence for **real-controller-originated movement and fire**, but not for all button mappings. Jump, Morph Ball, dodge, first-person aiming, missiles and concentration remained unverified; LB had no identified effect.
+
+The display achieved high throughput on a simple warning screen but the **training room ran at only approximately 0.3× game speed**. The graphics path avoided software rasterization but still did substantial CPU geometry work and used some software image encoders. The diagnostic system supports a reportable F3 status view and local input logs / DTM replay. The report lists local commits **`5d3b4fd`** and **`1162d6f`**.
+
+**Evidence boundary:** Claude used the logs and deterministic replay; he did not claim to watch the user's screen directly. This was a private interactive proof, **not a released or fully playable build**.
+
+## 2026-11-02: Reproducible Wii timing, early Vulkan output and input-driven Samus movement (earlier milestone)
 
 This session moved the native project beyond menus and cutscenes into its **first game scene with input-driven movement**. The private development harness reaches the training area, where Samus, the HUD and French subtitles are visible. Two test runs, one with controller inputs and one without, produced the same images until **450.05 seconds of emulated time**, just after the first scripted input. After that point, the images diverged; Samus moved along a wall in the input run and remained still in the control run. This establishes a response to scripted input in that scene. It **does not** prove that each action button is correctly mapped, that Dolphin reproduces the same gameplay or that a human can play the game in real time.
 
