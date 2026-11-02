@@ -10,9 +10,9 @@ No. The project is not playable yet. There is no public game release or download
 
 No. The project translates Wii PowerPC code ahead of time and compiles it for a host CPU. Dolphin is used as a development reference. The native runtime still supplies Wii hardware and service compatibility.
 
-## Does translating 32,275 functions mean the game works?
+## Does translating 32,282 functions mean the game works?
 
-No. Translation, compilation, execution and validation are separate milestones. My latest report includes GX command/FIFO comparisons and extended execution through DSP AX initialization up to the test watchdog, but does not establish rendered frames, audible game audio or playable gameplay. Some function discovery is speculative.
+No. Translation, compilation, execution and validation are separate milestones. My latest report includes **32,282 translated functions**, a first software-rendered game image matched byte-for-byte with Dolphin, active audio comparisons and native OPTIONS-menu interaction. None of these establishes a fully working or playable gameplay sequence. Some function discovery is speculative.
 
 ## Will I need the original game?
 
@@ -22,13 +22,18 @@ The installation goal requires a personal copy of the game. This repository prov
 
 My goal is to run *Metroid: Other M* natively on Windows and Linux. I'm currently developing and testing the native runtime on Linux. I plan to support 16:9 widescreen and 21:9 ultrawide displays with properly adapted visuals rather than stretching the image. Windows support, HD resolutions, higher frame rates, and keyboard, mouse and controller support are also planned. HDR10, VRR, NVIDIA G-SYNC and AMD FreeSync are additional optional goals, with SDR fallback for unsupported setups. None of these display or gameplay features has been validated yet, and I haven't established minimum PC requirements. See my [roadmap](ROADMAP.md).
 
-## What does "1,290 frames submitted" mean?
+## Are game images visible now?
 
-The native harness reportedly submitted about 1,290 frames to the emulated GPU, but it currently has **no rendering backend**. No visible native game image has been produced and the game is not playable.
+Yes, in my **private native development harness**. I adapted Dolphin's software GX renderer, and the first Wii Remote wrist-strap warning image matched Dolphin on **614,400/614,400 XFB bytes**. Selected introduction frames also matched. This reference renderer is slow and is **not the future GPU-accelerated renderer**. Direct Vulkan is currently recommended, but it is **not implemented yet**.
+
+## Can I interact with menus?
+
+The native harness reacts to **scripted Wii Remote input**. It reaches OPTIONS, changes language and subtitles, opens HOME with an IR pointer and progresses from START to a loading screen and cinematic. These interactions have **not all been matched against Dolphin**, and no controllable gameplay sequence has been validated. There is no playable public build.
 
 ## Is sound working now?
 
-I have implemented and exercised an AX Wii audio DSP path, DMA handling and WAV capture. The native run recorded silence for 239 seconds; Dolphin was also silent for 250 seconds without a connected Wii Remote. Because no voice was active, this does **not** yet validate actual sound mixing or playback. Audible output is still unproven.
+In the private harness, the AX DSP produces active audio. After synchronizing the recordings, **17.09 seconds** of output matched Dolphin sample-for-sample. Later audio diverges, likely due to timing, but the cause is not proven. This is a meaningful audio validation within a specific window, not complete audio correctness.
+
 
 ## When will it release?
 
