@@ -8,31 +8,30 @@ My goal is a **faithful, fluent, fully controllable native PC version** of *Metr
 
 | Stage | Purpose | Current status |
 | --- | --- | --- |
-| **1. Reconstruct the game program** | Translate PowerPC game code for execution on PC | **32,282 functions** translated and **753/753 tests** passing in reported suite |
-| **2. Rebuild Wii services** | Disc, memory, timing, audio and virtual Wii Remote behavior | Startup and major paths working; open fidelity differences remain |
-| **3. Produce real images and sound** | Menus, introduction and game graphics/audio | **Demonstrated in the private native harness** |
-| **4. Provide direct PC interaction** | Linux window and physical gamepad or keyboard input | **SDL3 window and real Xbox input demonstrated**; movement and beam fire confirmed through replay |
-| **5. Reach normal-speed gameplay** | Stable rendering, audio, responsive controls and complete training actions | **In progress:** latest unchanged-code run averaged **0.897×** in one training benchmark; host conditions vary and **stable 1.0× is not reached** |
-| **6. Validate the full game** | All scenes, mechanics, saves, controller functions and long sessions | Not demonstrated; additional scenarios needed |
-| **7. Improve presentation** | 1080p/1440p/4K, 16:9/21:9, optional AA, HDR10 and VRR | Planned, not player-ready |
-| **8. Windows and distribution** | Compile and test Windows, install using a player's copy, launcher and Releases | Windows source groundwork only; no public build |
+| **1. Reconstruct the game program** | Translate PowerPC game code for PC execution | **32,282 functions** reported translated; **753/753** translator tests passing |
+| **2. Rebuild Wii services** | Disc, memory, timing, audio and virtual Wii Remote | Startup and selected paths run; known fidelity gaps remain |
+| **3. Produce real images and sound** | Native graphics and audio | Demonstrated in the private Linux SDL3/Vulkan runtime |
+| **4. Provide direct PC interaction** | Conventional input via a dedicated PC application | Physical Xbox input, recorded movement and beam fire demonstrated; full mappings unverified |
+| **5. Reach normal-speed gameplay** | Stable speed, frame pacing and responsive controls | **~0.978× in one training-room benchmark (16.8–17.2 ms/frame)**; **1.0× sustained not demonstrated** |
+| **6. Validate the full game** | Scenes, mechanics, progression, saves and longer sessions | Not demonstrated; representative scenarios and regression automation required |
+| **7. Improve presentation** | HD/4K, 16:9/21:9, optional AA, HDR10 and VRR | Future goals, not completed player features |
+| **8. Windows and distribution** | Portable build, test, launcher, release and compliance | No tested Windows build; no public playable release |
 
-## Immediate priority: establish reliable measurement and full-speed gameplay
+## Immediate priority: move from a fast benchmark to robust normal-speed gameplay
 
-The Linux prototype already has a window, audio and physical Xbox-originated inputs. **The biggest remaining milestone is demonstrably stable, normal-speed gameplay.**
+The latest private A/B results report a **~0.978×** training-room benchmark, after increasing in-flight Vulkan submissions from four to eight. **Six alternating pairs found ~−1.28 ms/frame improvement**, confirmed by three further pairs (~−1.20 ms/frame). ThinLTO delivered an earlier ~−0.58 ms/frame improvement; PGO slowed the scene and was rejected. A corrected EFB memory-range calculation eliminated false waits without proven mean performance gain.
 
-**Performance history:** early tests measured **0.369×**, then **0.576×**; retained code optimizations led to **0.807–0.808×** and **0.835–0.848×** in later controlled sessions. The latest run of the *same code*, under different host conditions, measured **0.879–0.917×**, **0.897× average** across five executions. **No new code optimization caused that latest between-session rise.**
+The next optimization experiment is to test whether the development RTX 4090's low-power P8 state affects measured GPU execution latency. The test is **temporary, reversible and diagnostic only**; **results are not yet available** and a player-facing NVIDIA setting is not an acceptable dependency.
 
 Next engineering work:
 
-1. **Stabilize benchmark conditions**: quantify CPU/GPU frequency, background load, scheduling, shader/pipeline caches and variability; use paired A/B comparisons.
-2. **Profile and specialize high-cost vertex formats** in the GX vertex loader, with a fully correct generic fallback.
-3. **Profile the translated PowerPC runtime helper overhead**, preserving calling-convention correctness and register state.
-4. **Reduce critical-path Vulkan work** and prepare known pipelines earlier, if measured worthwhile.
-5. Demonstrate **0.90×, 0.95× and sustained 1.0×** without skipped work, inaccurate timing or significant frame pacing problems.
-6. Re-test **real physical Xbox gameplay** and validate all essential actions, then broaden checks to other scenes and saves.
+1. Reproduce and validate **sustained 1.0×** in the fixed training-room benchmark (about **16.67 ms/frame** for the tested 60 Hz pace) with robust P95/P99, correct audio and accurate simulated timing.
+2. Profile and reduce GPU scheduling, submission and copy-stage critical-path costs with **cross-vendor Vulkan** approaches.
+3. Expand automated tests across **representative workloads**: menus, exploration, battles, transitions, cutscenes and heavier effects. Global engine improvements should apply across areas; each room should not need a bespoke optimization.
+4. Resolve known graphics/memory discrepancies against references and reduce shader cold-start stalls.
+5. Test full keyboard/mouse and Xbox controls, native save reading and longer progression, then prepare a Windows build.
 
-The reported frame-time budget for 1.0× on the tested 60 Hz training sequence is **16.67 ms**; the last run averaged around **18.58 ms**. These measurements **do not represent the percentage of project completion**. The lightweight warning screen may run much faster, but is not representative of gameplay.
+**Performance speed is not the project's percentage of completion.** The latest measured benchmark does not establish whole-game performance or a public release date. **x86-64-v3** is the chosen CPU ISA baseline; no full minimum hardware requirements have yet been measured.
 
 ## Making Wii controls work on PC
 
