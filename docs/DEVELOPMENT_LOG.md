@@ -4,6 +4,18 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
+## 2026-11-03: First measured average above normal speed — 1.013× (training room)
+
+**Milestone.** The private Linux native runtime first exceeded **1.0× average simulation speed** on the fixed training-room benchmark: **1.013×**, reported after **six alternating A/B pairs** of a Vulkan fragment-shader optimization. The new behavior provided **−0.52 ms/frame on average**, improved P99, and **unchanged internal reference frames**; the developer then reported that the full non-regression suite passed. No precise new P99 range or change-commit hash was included in the shared report. The earlier eight-slot Vulkan baseline had been about **0.978×** in a preceding controlled session.
+
+**Why it helps.** Profiling showed the fragment/TEV shader was a large part of GPU render-pass time. A diagnostic removal of fragment `discard` everywhere lowered pass execution time, but this would not be a generally correct implementation. Instead, the runtime uses the emulated **alpha-test classification** (always pass / always fail / depends on value) to choose a shader **without `discard` only where the test necessarily passes**. Conditional paths preserve the required behavior. A deliberately trivial shader produced divergent reference frames, verifying that the reference check detects at least that incorrect variant.
+
+**PowerMizer diagnostic could not run.** The host session uses Wayland, with no accessible X NV-CONTROL extension to read/change PowerMizer through `nvidia-settings`. The test was therefore **not performed**; the GPU remained at its observed **P8**, approximately **210 MHz core / 405 MHz memory**, during the initial diagnostic observation. No persistent or temporary NVIDIA policy change was made.
+
+**Next experiment still running.** A separate **TEV shader specialization** using Vulkan specialization constants for stage counts/texture coordinates was prepared for six paired A/B runs. **There is no result in the shared excerpt**; it must not be counted as a retained performance improvement yet.
+
+**Limits.** The 1.013× figure is a **mean speed in one training-room benchmark** and not proof of smooth 60 Hz pacing in every frame, gameplay beyond the tested scene, completed controls, full Wii/Dolphin fidelity, or a release-ready Windows/Linux game. This is a **shared-engine rendering change**, not a per-level patch. No game code, copyrighted assets, private save files or playable executable were published.
+
 ## 2026-11-03: Vulkan submission pipeline reaches ~0.978× in a measured training benchmark
 
 **Retained performance result.** The latest private report increased in-flight Vulkan submission slots from **four to eight**, after new event tracing revealed that waiting to acquire a submission slot accounted for approximately **3.96 ms/frame** within a **5.66 ms/frame** render-thread wait/flush component. Six alternating A/B pairs found **−1.28 ms/frame** on average; three more pairs comparing the final binary with the pre-change reference confirmed **−1.20 ms/frame**. The training-room benchmark reached **16.8–17.2 ms/frame (~0.978×)**, with reported **P99 of 20.2–20.5 ms**. Six slots did not demonstrate improvement; twelve used more memory without a clear gain. Peak RAM increased from about **863 MB** to about **1,041 MB**. Local commit: **`4d7cb38`**.
