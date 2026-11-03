@@ -2,7 +2,7 @@
 
 Je développe une **adaptation PC native et indépendante de *Metroid: Other M***, sorti à l'origine sur Nintendo Wii. Mon objectif est de préserver le jeu original tout en le rendant utilisable sur les ordinateurs modernes, avec des commandes adaptées et, à terme, des améliorations graphiques facultatives.
 
-**État actuel : un prototype interactif fonctionne sous Linux, mais il reste plus lent que le jeu original. Aucune version jouable n'est distribuée.**
+**État actuel : le prototype privé Linux atteint environ 0,978× dans un banc d'entraînement ; la fluidité et la compatibilité du jeu complet ne sont pas validées. Aucune version jouable publique n'est distribuée.**
 
 [English](README.md) | **Français**
 
@@ -22,59 +22,44 @@ Je souhaite proposer à terme :
 
 Ce sont des **objectifs**, et non des fonctionnalités déjà disponibles dans une version publique.
 
-## Dernières avancées — documentation actualisée le 3 novembre 2026
+## Dernières avancées — 3 novembre 2026
 
-**Le prototype privé sous Ubuntu s'affiche dans une véritable fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique.** Une séance de commandes enregistrée a été rejouée et comparée à une exécution sans entrée : Samus **se déplace et tire** dans la salle d'entraînement. Ce prototype interactif **n'est pas encore un jeu PC complet, fluide et distribué**.
+**Le prototype privé sous Ubuntu affiche une fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique.** Le déplacement et le tir ont été démontrés par enregistrement puis rejeu de commandes dans la salle d'entraînement. Toutes les commandes et l'intégralité du jeu ne sont pas encore validées.
 
-Les dernières sessions visent surtout **l'optimisation mesurable sans perte de fidélité** :
+Le **dernier rapport privé** indique une vitesse de simulation d'environ **0,978×** sur le banc de la salle d'entraînement (**environ 16,8–17,2 ms/trame**), après une optimisation mesurée des soumissions Vulkan. Cela **ne démontre pas encore 1,0× stable dans l'ensemble du jeu**, et **aucune version jouable publique n'est distribuée**.
 
 | Domaine | Derniers résultats rapportés |
 | --- | --- |
-| Recompilation | **32 282 fonctions PowerPC** traduites ; **753/753 tests** du traducteur réussis |
-| Expérience Linux | Fenêtre SDL3/Vulkan, sortie audio, manette physique ; déplacement et tir démontrés par rejeu comparatif |
-| Rendu | Copies GPU vers textures, shader TEV optimisé, deux fils de transformation, assemblage/découpage parallèles des triangles et réutilisation bornée des images Vulkan |
-| Performances | Dernière session, code inchangé : **0,879–0,917× (0,897× de moyenne sur cinq exécutions)** dans la salle d'entraînement ; **18,19–18,97 ms/trame** |
-| Gain directement imputable au code | Une comparaison A/B précédente a confirmé **environ 0,54 ms/trame** économisée grâce à l'assemblage parallèle ; dans cette session, la vitesse était de **0,835–0,848×** |
-| Fidélité | **28 167 trames internes** inchangées lors des contrôles de non-régression ; des écarts avec Dolphin demeurent |
-| Son | **156,73 secondes** identiques à une capture de référence testée, sans validation de tout le jeu |
-| Mémoire | Environ **857 Mo de RAM** et **78 Mo de VRAM** lors du dernier banc ; ce ne sont pas des besoins minimaux |
-| Sauvegarde PAL | Export Wii SD européen **R3OP** reconnu avec **trois emplacements** ; progression « 100 % » et chargement natif non vérifiés |
-| Windows | Base multiplateforme présente ; **version Windows non compilée et non testée** |
+| Recompilation native | **32 282 fonctions PowerPC** traduites ; **753/753 tests** du traducteur |
+| Expérience Linux | Fenêtre SDL3/Vulkan, sortie audio, manette Xbox réelle ; déplacement et tir démontrés par rejeu |
+| Performances graphiques | Passage de **4 à 8 soumissions Vulkan simultanées** : environ **−1,28 ms/trame** sur six paires A/B ; trois paires supplémentaires confirment **−1,20 ms/trame** |
+| Compilation | **ThinLTO avec Clang/LLD** sur le rendu : gain antérieur d'environ **−0,58 ms/trame** ; PGO testé puis rejeté car plus lent |
+| Coût mémoire | Environ **1 041 Mo de RAM** avec huit emplacements, contre **863 Mo** avec quatre, sur la machine de développement |
+| Fidélité | **28 167 trames internes** identiques ; **753/753** tests du traducteur et **3/3** des commandes ; **156,73 s** d'audio conformes |
+| Copies GPU | **4 671 copies contrôlées**, aucune différence lors de la dernière validation concernée |
+| Écarts connus | **29 trames de fondu** différentes de la référence logicielle ; **135 et 387 octets** d'écart mémoire avec Dolphin |
+| Sauvegarde PAL | Export privé européen **R3OP** identifié, trois emplacements chiffrés ; progression « 100 % » et chargement non vérifiés |
+| Windows | Base multiplateforme ; **aucune compilation ni validation Windows** |
 
-### Ce que signifient les dernières mesures
+### Signification de ces performances
 
-La dernière session **n'a conservé aucune nouvelle optimisation**. Claude a déplacé temporairement le calcul des pentes géométriques vers les fils de transformation : les images restaient conformes, mais le temps moyen augmentait **d'environ 0,21 ms/trame**. L'expérience a été annulée.
+Le test couvre la salle d'entraînement entre **438 et 470 secondes simulées**. Pour une simulation à 60 Hz, **1,0× correspond à environ 16,67 ms/trame**. La vitesse actuelle de **0,978×** est un résultat de benchmark, **pas un pourcentage d'achèvement** ni la preuve de performances identiques dans les autres zones. Le **P99 reste autour de 20,2–20,5 ms**.
 
-Le même code s'est montré sensiblement plus rapide que lors de la session précédente. Par conséquent, **la moyenne de 0,897× est une observation dépendant des conditions du poste, et non un gain attribuable à une modification de code**. La prochaine priorité est de maîtriser cette variabilité, puis d'optimiser le chargement des sommets et les fonctions du runtime natif.
+Le gain provient d'une **modification démontrée** : huit emplacements de soumission Vulkan au lieu de quatre. Six emplacements n'apportaient pas de gain confirmé ; douze augmentaient la mémoire sans bénéfice clair. Une autre correction a supprimé **8 038 attentes EFB/texture artificielles** causées par un calcul de plages mémoire trop large : elle améliore la précision, mais **aucun gain moyen n'a été démontré**.
 
-Sur la séquence testée à 60 Hz, il faut environ **16,67 ms/trame** pour atteindre la vitesse normale, contre **18,58 ms/trame** en moyenne dans la dernière session. Les paliers **0,90×, 0,95× et 1,0× stable ne sont pas encore validés**. La vitesse de simulation n'est pas le pourcentage d'achèvement du projet.
+ThinLTO a également apporté un gain mesuré, tandis que PGO a été rejeté. La comparaison de la compilation des fonctions PowerPC avec `-ffp-contract=off` n'a pas modifié leur code machine ; le runtime applique désormais un garde-fou contre certaines contractions flottantes. La cible CPU officielle est **x86-64-v3**, sans que cela définisse à lui seul la configuration minimale complète.
 
-### Origine des saccades au démarrage
+### Étapes suivantes
 
-Avec des caches isolés, la création des pipelines Vulkan a demandé environ **436 ms à froid**, contre **1 ms à chaud**. La première image a pris **514 ms à froid**, contre **82 ms à chaud**. Cela explique le pic initial d'environ 520 ms observé dans ce test, sans garantir la disparition de toutes les saccades pendant le jeu. La préparation anticipée des pipelines est à étudier.
+La trace indique notamment **4,65 ms/trame d'exécution GPU**, **2,43 ms/trame de relecture/encodage** et **2,26 ms/trame de délai avant le GPU** dans le chemin étudié. La RTX 4090 utilisée pour le développement reste souvent en état d'économie **P8**. **L'influence réelle de cet état n'est pas encore prouvée** : un test temporaire et réversible a été autorisé, sans résultat disponible à ce stade. Le moteur final ne devra pas exiger un réglage NVIDIA.
 
-### Ce qui reste à faire
+Les prochaines priorités sont : obtenir **1,0× reproductible**, améliorer la régularité des trames, vérifier plusieurs scènes et les commandes, corriger les écarts graphiques et mémoire, puis valider les sauvegardes et Windows. Les optimisations portent sur le moteur commun ; chaque zone devra être testée, pas optimisée individuellement par principe.
 
-- Atteindre **1,0× en continu**, maîtriser les temps de trame et mesurer plusieurs scènes.
-- Compléter les effets GX/Vulkan : certains traitements de brouillard, textures indirectes, mipmaps et mélange des couleurs ; **29 trames de fondu diffèrent toujours** de la référence logicielle.
-- Examiner les **écarts mémoire de 135 et 387 octets avec Dolphin** aux checkpoints observés.
-- Vérifier le saut, la Morph Ball, les esquives, la visée subjective, les missiles, la concentration et les autres commandes.
-- Vérifier réellement le contenu de la sauvegarde PAL annoncée à 100 % ; **aucune importation dans Dolphin ni lecture native n'a encore été démontrée**.
-- Valider la Wiimote physique avec DolphinBar, compiler Windows et développer les options graphiques HD/HDR/VRR et d'anticrénelage.
-
-### Priorités immédiates
-
-1. Rendre **les benchmarks reproductibles** : un même binaire varie de plus d'une milliseconde/trame entre sessions.
-2. Profiler et alléger le **Vertex Loader** et les fonctions d'assistance au code PowerPC recompilé.
-3. Réduire les coûts Vulkan et de synchronisation sans modifier les résultats.
-4. Préparer les pipelines GPU pour limiter les saccades à cache froid.
-5. Valider un gameplay à vitesse normale avec une vraie manette, puis élargir les tests aux autres scènes et aux sauvegardes.
-
-L'[état de développement](docs/BUILD_STATUS.md) et le [journal de développement](docs/DEVELOPMENT_LOG.md) détaillent les preuves, les expériences conservées ou rejetées et les problèmes ouverts.
+Détails : [état de développement](docs/BUILD_STATUS.md), [journal](docs/DEVELOPMENT_LOG.md), [feuille de route](docs/ROADMAP.md).
 
 ## Suivi et publication
 
-Ces informations proviennent de mes **rapports privés Claude Code du 2 novembre 2026**. Les programmes et leurs tests n'ont pas été réexécutés indépendamment lors de cette mise à jour publique. Je distingue les résultats rapportés des fonctionnalités effectivement disponibles pour les joueurs.
+Ces informations proviennent de mes **rapports privés Claude Code jusqu'au 3 novembre 2026**. Les programmes et leurs tests n'ont pas été réexécutés indépendamment lors de cette mise à jour publique. Je distingue les résultats rapportés des fonctionnalités effectivement disponibles pour les joueurs.
 
 Je prévois de publier un lanceur sur [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) lorsqu'il sera prêt. **Aucune date de sortie, aucun exécutable public et aucune configuration minimale validée** ne sont annoncés. La future installation devra utiliser **une copie personnelle et locale du jeu**.
 
