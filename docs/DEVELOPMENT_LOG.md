@@ -4,7 +4,23 @@
 
 I use this log to record significant milestones and the limits of the supporting evidence. I do not include raw game data or private diagnostic artifacts.
 
-## 2026-11-03: Review of latest private reports — 0.897× observed, same runtime code
+## 2026-11-03: Vulkan submission pipeline reaches ~0.978× in a measured training benchmark
+
+**Retained performance result.** The latest private report increased in-flight Vulkan submission slots from **four to eight**, after new event tracing revealed that waiting to acquire a submission slot accounted for approximately **3.96 ms/frame** within a **5.66 ms/frame** render-thread wait/flush component. Six alternating A/B pairs found **−1.28 ms/frame** on average; three more pairs comparing the final binary with the pre-change reference confirmed **−1.20 ms/frame**. The training-room benchmark reached **16.8–17.2 ms/frame (~0.978×)**, with reported **P99 of 20.2–20.5 ms**. Six slots did not demonstrate improvement; twelve used more memory without a clear gain. Peak RAM increased from about **863 MB** to about **1,041 MB**. Local commit: **`4d7cb38`**.
+
+**Earlier confirmed compiler optimization.** The renderer uses **Clang 23.1.4/LLD 23 ThinLTO**, not GCC's `-flto=auto`. Six paired A/B measurements showed **−0.58 ms/frame**, with mean training times **18.73 → 18.15 ms/frame** (reported **0.890× → 0.918×**). Experimental Clang PGO produced an average **+0.19 ms/frame** regression in the profiled training room and slight slowdowns in an unprofiled warning scene, so it was not activated. Local commits: **`b951371`**, **`606fcce`**.
+
+**Correctness correction, not speed gain.** EFB copy destination ranges had been overestimated by a factor of **4–8**. Using the actual block-row geometry eliminated **8,038 false copy-before-texture waits** without a measurable mean speed improvement (**−0.04 ms/frame** over six pairs). The corrected bounds were checked against actual writes. This was retained for dependency accuracy, with a P99 improvement observed in five of six paired comparisons. Local commit: **`709434c`**.
+
+**Floating-point audit.** Recompiling **32,282 translated PowerPC functions** with `-ffp-contract=off` left their generated machine code byte-identical in the tested build. Four native runtime objects changed, including disc and file time calculations. A targeted numerical test reported no final emulated-tick difference over **20 million simulated disk seeks**. The option was retained as a guard against unwanted host floating-point contractions, not as proof of full PowerPC equivalence. Local commit: **`594ba1b`**.
+
+**Validation.** The latest retained code was reported to pass **28,167 internal frame checks, 753/753 translator tests, 3/3 input tests, selected 156.73 seconds of audio checks, IPC checkpoints 4 and 35**, and **4,671 GPU copy checks with zero differences**. These tests do not clear the pre-existing **29 Vulkan/software fade-frame differences** or **135/387-byte Dolphin memory differences**.
+
+**Next measured bottleneck.** The trace now attributes about **4.65 ms/frame** to GPU execution, **2.43 ms/frame** to copy-stage readback/encoding, and **2.26 ms/frame** to delay before GPU execution in the studied synchronization path. Read-only NVIDIA telemetry observed the development RTX 4090 frequently at low-power **P8 (210 MHz core/405 MHz memory)**. The cause/effect is **not yet established**. A temporary, reversible A/B diagnostic has been authorized but **its outcome is not yet available**. Any application-side optimization should remain GPU-vendor-neutral.
+
+**Limits.** The **~0.978×** number is a private, single-system training-room benchmark, **not sustained 1.0×, full-game compatibility or a public release**. The target CPU ISA is **x86-64-v3**. Cross-vendor Vulkan, Windows, complete controls, game saves and higher-resolution presentation remain future verification/development work. These results do not establish minimum PC requirements. No game assets or runtime binaries are published in this documentation repository.
+
+## 2026-11-03: Earlier unchanged-code session — 0.897× observed (historical)
 
 **Change / finding.** The most recent training-room benchmark completed **five runs at 0.879–0.917×**, with an observed average **0.897×** and average processing times between **18.19 and 18.97 ms/frame** (approximately **18.58 ms aggregate**). This is close to normal simulated game speed but **not yet demonstrated as sustained 0.90×, 0.95× or 1.0× gameplay**.
 
