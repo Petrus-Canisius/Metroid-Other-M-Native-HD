@@ -2,7 +2,7 @@
 
 I am working on an **independent native PC adaptation of *Metroid: Other M***, originally released for Nintendo Wii. The goal is to preserve the original game while making it practical to run on modern computers, with conventional PC controls and, eventually, optional visual improvements.
 
-**Current status: an interactive private Linux prototype benchmarks near normal speed (~0.978× in one training-room test); full-game stability and compatibility are unverified. There is no public playable release.**
+**Current status: the private Linux prototype has exceeded normal simulation speed in one measured training-room benchmark (1.013× average); full-game stability and compatibility remain unverified. There is no public playable release.**
 
 **English** | [Français](README.fr.md)
 
@@ -22,40 +22,45 @@ My intended PC version will offer:
 
 These are **future product goals**, not a list of completed features.
 
-## Latest progress — 3 November 2026
+## Latest progress — 3 November 2026: first training-room benchmark above 1.0×
 
-**The private Ubuntu prototype opens an SDL3/Vulkan window, produces audio and accepts physical Xbox Series X controller input.** Movement and beam firing have been demonstrated in a recorded and replayed training-room session. Full control coverage and full-game compatibility remain unverified.
+**For the first time, the private native Linux prototype has exceeded normal simulation speed on the fixed training-room benchmark: a reported average of 1.013×.** The result follows a targeted Vulkan fragment-shader improvement and was measured in **six alternating A/B comparisons**, with a reported **0.52 ms/frame average gain** and improved P99. The **full internal regression suite passed** according to the latest Claude Code report.
 
-The **latest private development report** records a measured **~0.978× simulation speed** in the fixed training-room benchmark (**approximately 16.8–17.2 ms/frame**) following a reproducible improvement to Vulkan submission scheduling. This is **not yet a demonstrated stable 1.0× across the game**, and there is **no public playable release**.
+**This is an important engineering milestone, not proof of full-speed gameplay throughout the game. There is no public playable release.**
 
-| Area | Latest evidence from private reports |
+The private SDL3/Vulkan prototype produces audio, accepts a physical Xbox Series X controller, and has previously demonstrated Samus moving and firing through recorded/replayed controller input. Other controls and full-game behavior remain to be validated.
+
+| Area | Latest private development evidence |
 | --- | --- |
-| Native translation | **32,282 PowerPC functions** translated; **753/753** translator tests passing |
-| Current game experience | Linux SDL3/Vulkan window, audio and physical Xbox input; controlled replay demonstrates movement and beam firing |
-| Render performance | **Eight Vulkan submissions in flight**, up from four: approximately **−1.28 ms/frame** over six alternating A/B pairs; three further pairs confirm about **−1.20 ms/frame** against the earlier reference |
-| Build optimizations | **Clang/LLD ThinLTO** on the renderer; previously about **−0.58 ms/frame** over six matched pairs; experimental PGO was rejected because it slowed the tested scene |
-| Memory tradeoff | Eight submission slots use about **1,041 MB RAM**, versus **863 MB** with four slots on the development system |
-| Fidelity | **28,167 internal regression frames** unchanged; **753/753** translator and **3/3** input tests; **156.73 seconds** of reference audio unchanged |
-| GPU copies | **4,671 checked copies**, none differing in the most recent relevant validation |
-| Remaining reference differences | **29** differing fade frames in the Vulkan/software sample, and **135/387-byte** memory differences against Dolphin at two checkpoints |
-| PAL save | Private European **R3OP** export recognized with three encrypted slots; purported 100% completion, Dolphin import and native loading **not verified** |
-| Windows | Cross-platform groundwork exists; **no Windows binary compiled or tested** |
+| **Performance milestone** | **1.013× average simulation speed** in the measured training-room scenario, first reported result above 1.0× |
+| **New Vulkan optimization** | Specialized alpha-test shader: omit fragment `discard` **only when the emulated alpha-test configuration guarantees every fragment passes**; **−0.52 ms/frame** across **six paired A/B runs**, with matching reference frames |
+| Previous improvements | Eight in-flight Vulkan submission slots: **−1.28 ms/frame** in a six-pair comparison; renderer **ThinLTO: −0.58 ms/frame** in six pairs |
+| Translation and tests | **32,282 translated PowerPC functions**, **753/753** translator tests in prior documented full suites; latest alpha-test regression suite reported passing |
+| Graphics and sound | **28,167 internal reference frames** in the established regression suite; selected **156.73 s** audio reference; known discrepancies with Dolphin remain |
+| Controls | Xbox controller recognition; movement and beam firing demonstrated in a controlled recorded-input replay, not complete gameplay verification |
+| GPU driver diagnosis | NVIDIA PowerMizer adjustment **was not performed**: Wayland/Xwayland did not expose NV-CONTROL. GPU driver settings were left unchanged |
+| In-progress experiment | **TEV shader specialization** using Vulkan specialization constants is undergoing **six paired A/B measurements**; **no outcome reported yet** |
+| Portability | **x86-64-v3** CPU ISA requirement; Vulkan cross-vendor goal; **no tested Windows build or public release** |
 
-### How to interpret the new speed
+### How the 1.013× milestone was reached
 
-The 60 Hz benchmark runs the training-room segment at **438–470 seconds of simulated time**. Normal-speed simulation corresponds to approximately **16.67 ms/frame** in this test. The latest **0.978×** is a benchmark result, **not a completion percentage**, a guarantee for other scenes, or proof of smooth frame pacing. The reported **P99 is around 20.2–20.5 ms**, so occasional slower frames remain.
+Profiling found that fragment/TEV work was a major part of GPU render-pass time. A diagnostic experiment removing alpha-test `discard` everywhere reduced measured render-pass cost, but was not suitable as a permanent implementation because it could change rendering. The retained implementation uses the emulator's **alpha-test classification** to select a shader variant **without `discard` only for the always-pass case**, retaining the correct path for conditional alpha tests.
 
-The improvement is attributable to a **measured code change**: increasing in-flight Vulkan submission slots from four to eight. Six slots showed no reproducible gain, while twelve did not justify their higher memory usage. A separate fix removed **8,038 false EFB copy/texture waits** by correcting overestimated memory ranges; it improved dependency accuracy but **did not demonstrate a mean speed gain**.
+The fixed-scene comparison used pipeline-cache prewarming and **six matched A/B pairs**. The developer reported **−0.52 ms/frame on average**, an average simulation speed of **1.013×**, improved P99 and unchanged regression frames; full non-regression tests subsequently passed. No exact new P99 range was included in the shared progress excerpt.
 
-Earlier ThinLTO testing also delivered a controlled gain. PGO did not. The translated PowerPC functions' machine code was unchanged in the tested `-ffp-contract=off` comparison; the runtime now explicitly disables unwanted floating-point contraction where appropriate. The CPU instruction-set baseline is **x86-64-v3**; this does **not** establish complete minimum system requirements.
+A trivial fragment shader was separately confirmed to **change reference frames**, showing that the graphical regression check can detect at least that kind of incorrect rendering.
 
-### Next bottlenecks and work
+### What this does — and does not — prove
 
-The trace now highlights roughly **4.65 ms/frame of GPU execution**, **2.43 ms/frame of copy-stage readback/encoding** and **2.26 ms/frame of pre-GPU delay** along the profiled synchronization path. A read-only observation found the development RTX 4090 in its low-power **P8** state for much of the benchmark. **Whether that causes the slowdown is not established**; a temporary, reversible diagnostic has been authorized, but no result is reported here. The shipped runtime must **not** require an NVIDIA-specific driver setting.
+At the tested 60 Hz simulation pace, normal speed corresponds to approximately **16.67 ms per frame**. Exceeding **1.0× on average in a controlled training-room test** does not establish smooth pacing on every frame, sustained real-controller gameplay, performance in demanding levels, or whole-game correctness. Known gaps include **29 differing fade frames** in a Vulkan/software comparison and **135/387-byte** differences against Dolphin memory references.
 
-Next: validate sustained **1.0×** and frame pacing, profile the remaining GPU/copy path under normal driver settings, broaden gameplay-scene regression coverage, verify all controller actions and saves, resolve the remaining graphical and Dolphin-reference differences, and eventually test Windows. Shader-pipeline compilation still causes a measured cold-start delay in a separate test. Reusable engine changes should benefit many zones; testing other scenes does not mean hand-optimizing every level.
+The optimization is part of the **shared Vulkan renderer**, not a per-level patch. Other areas still need representative automated testing, not an assumption that each must be hand-optimized.
 
-Details and qualifications are in [current status](docs/BUILD_STATUS.md), [development history](docs/DEVELOPMENT_LOG.md) and the [roadmap](docs/ROADMAP.md).
+### Immediate next work
+
+Finish and evaluate the **TEV specialization A/B experiment** without claiming a result before measurement. Then establish a repeatable margin above 1.0×, improve P95/P99 and shader cold-start pacing, validate more gameplay scenes and controls, resolve remaining rendering/memory differences, and test saves and Windows. The attempted temporary PowerMizer test did **not** change the NVIDIA driver under Wayland.
+
+Further technical detail: [build status](docs/BUILD_STATUS.md), [development log](docs/DEVELOPMENT_LOG.md), [roadmap](docs/ROADMAP.md).
 
 ## Development evidence and publication
 
