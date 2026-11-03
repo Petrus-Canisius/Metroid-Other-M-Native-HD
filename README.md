@@ -2,7 +2,7 @@
 
 I am working on an **independent native PC adaptation of *Metroid: Other M***, originally released for Nintendo Wii. The goal is to preserve the original game while making it practical to run on modern computers, with conventional PC controls and, eventually, optional visual improvements.
 
-**Current status: an interactive Linux prototype exists, but it still runs below normal speed. There is no public playable release.**
+**Current status: an interactive private Linux prototype benchmarks near normal speed (~0.978× in one training-room test); full-game stability and compatibility are unverified. There is no public playable release.**
 
 **English** | [Français](README.fr.md)
 
@@ -22,59 +22,44 @@ My intended PC version will offer:
 
 These are **future product goals**, not a list of completed features.
 
-## Latest progress — documentation reviewed 3 November 2026
+## Latest progress — 3 November 2026
 
-**The private Ubuntu prototype already opens a real SDL3/Vulkan window, outputs audio and accepts a physical Xbox Series X controller.** A recorded controller session was replayed against a no-input run and showed Samus **moving and firing** in the training room. This is an interactive prototype, **not a full-speed or publicly released PC game**.
+**The private Ubuntu prototype opens an SDL3/Vulkan window, produces audio and accepts physical Xbox Series X controller input.** Movement and beam firing have been demonstrated in a recorded and replayed training-room session. Full control coverage and full-game compatibility remain unverified.
 
-The recent engineering effort has focused on **accurate, repeatable performance optimization**, not adding headline features:
+The **latest private development report** records a measured **~0.978× simulation speed** in the fixed training-room benchmark (**approximately 16.8–17.2 ms/frame**) following a reproducible improvement to Vulkan submission scheduling. This is **not yet a demonstrated stable 1.0× across the game**, and there is **no public playable release**.
 
-| Area | Latest reported evidence |
+| Area | Latest evidence from private reports |
 | --- | --- |
-| Recompilation | **32,282 PowerPC functions** translated; **753/753 translator tests** passed |
-| Linux experience | SDL3/Vulkan window, audio output and real-controller input; movement and beam fire demonstrated in a controlled replay |
-| Rendering | GPU copy-to-texture, optimized TEV shader, two transformation workers, parallel triangle assembly/clipping and bounded Vulkan image reuse |
-| Performance | Most recent unchanged-code session: **0.879–0.917× speed (0.897× average across five runs)** in the training-room benchmark; **18.19–18.97 ms/frame** |
-| Controlled code improvement | Earlier paired A/B testing demonstrated a **~0.54 ms/frame** gain from parallel triangle assembly; stable results in that session were **0.835–0.848×** |
-| Accuracy | **28,167 internal regression frames** unchanged; graphics and game timing still have known differences from Dolphin |
-| Audio | **156.73 seconds** matched a tested reference capture; not whole-game validation |
-| Memory | Approximately **857 MB RAM** and **78 MB VRAM** in the recent benchmark; not minimum requirements |
-| PAL save | European **R3OP** Wii SD export identified, with **three save slots**; contents are encrypted, “100%” progress and native loading unverified |
-| Windows | Cross-platform scaffolding exists; **Windows has not been compiled or tested** |
+| Native translation | **32,282 PowerPC functions** translated; **753/753** translator tests passing |
+| Current game experience | Linux SDL3/Vulkan window, audio and physical Xbox input; controlled replay demonstrates movement and beam firing |
+| Render performance | **Eight Vulkan submissions in flight**, up from four: approximately **−1.28 ms/frame** over six alternating A/B pairs; three further pairs confirm about **−1.20 ms/frame** against the earlier reference |
+| Build optimizations | **Clang/LLD ThinLTO** on the renderer; previously about **−0.58 ms/frame** over six matched pairs; experimental PGO was rejected because it slowed the tested scene |
+| Memory tradeoff | Eight submission slots use about **1,041 MB RAM**, versus **863 MB** with four slots on the development system |
+| Fidelity | **28,167 internal regression frames** unchanged; **753/753** translator and **3/3** input tests; **156.73 seconds** of reference audio unchanged |
+| GPU copies | **4,671 checked copies**, none differing in the most recent relevant validation |
+| Remaining reference differences | **29** differing fade frames in the Vulkan/software sample, and **135/387-byte** memory differences against Dolphin at two checkpoints |
+| PAL save | Private European **R3OP** export recognized with three encrypted slots; purported 100% completion, Dolphin import and native loading **not verified** |
+| Windows | Cross-platform groundwork exists; **no Windows binary compiled or tested** |
 
-### Why the latest speed must be interpreted carefully
+### How to interpret the new speed
 
-The last session **did not retain a new performance optimization**. Moving geometric slope calculation to the transformation workers was tested with alternating A/B runs, produced correct frames, but was **slightly slower (~0.21 ms/frame on average)** and was reverted.
+The 60 Hz benchmark runs the training-room segment at **438–470 seconds of simulated time**. Normal-speed simulation corresponds to approximately **16.67 ms/frame** in this test. The latest **0.978×** is a benchmark result, **not a completion percentage**, a guarantee for other scenes, or proof of smooth frame pacing. The reported **P99 is around 20.2–20.5 ms**, so occasional slower frames remain.
 
-The same existing code benchmarked substantially faster in the most recent session than the previous one. Thus, **the 0.897× average is an observed result under those machine conditions, not a new code-attributable improvement**. The next development task is to characterize between-session variability and optimize the vertex loader and native runtime overhead.
+The improvement is attributable to a **measured code change**: increasing in-flight Vulkan submission slots from four to eight. Six slots showed no reproducible gain, while twelve did not justify their higher memory usage. A separate fix removed **8,038 false EFB copy/texture waits** by correcting overestimated memory ranges; it improved dependency accuracy but **did not demonstrate a mean speed gain**.
 
-For the tested 60 Hz training sequence, normal speed would require around **16.67 ms/frame**, compared with approximately **18.58 ms/frame** averaged across the most recent runs. **0.90×, 0.95× and stable 1.0× remain unverified milestones.** A speed multiplier is not a project-completion percentage.
+Earlier ThinLTO testing also delivered a controlled gain. PGO did not. The translated PowerPC functions' machine code was unchanged in the tested `-ffp-contract=off` comparison; the runtime now explicitly disables unwanted floating-point contraction where appropriate. The CPU instruction-set baseline is **x86-64-v3**; this does **not** establish complete minimum system requirements.
 
-### Better understanding of startup stutters
+### Next bottlenecks and work
 
-Isolated cache tests measured approximately **436 ms to create pipelines with an empty cache**, versus **1 ms with a warm cache**. The first rendered frame took **514 ms cold**, versus **82 ms warm**. This explains a previously observed ~520 ms startup spike in the tested case; it does **not** prove every gameplay stutter is gone. Pipeline preparation and cache strategy are future work.
+The trace now highlights roughly **4.65 ms/frame of GPU execution**, **2.43 ms/frame of copy-stage readback/encoding** and **2.26 ms/frame of pre-GPU delay** along the profiled synchronization path. A read-only observation found the development RTX 4090 in its low-power **P8** state for much of the benchmark. **Whether that causes the slowdown is not established**; a temporary, reversible diagnostic has been authorized, but no result is reported here. The shipped runtime must **not** require an NVIDIA-specific driver setting.
 
-### What still needs work
+Next: validate sustained **1.0×** and frame pacing, profile the remaining GPU/copy path under normal driver settings, broaden gameplay-scene regression coverage, verify all controller actions and saves, resolve the remaining graphical and Dolphin-reference differences, and eventually test Windows. Shader-pipeline compilation still causes a measured cold-start delay in a separate test. Reusable engine changes should benefit many zones; testing other scenes does not mean hand-optimizing every level.
 
-- Sustained **1.0×** simulation speed, predictable frame pacing and tests in multiple scenes.
-- Missing GX/Vulkan effects, including certain fog, indirect-texture, mipmap and blending behavior; **29 fade frames remain different** in the software comparison.
-- Unresolved Dolphin memory differences of **135 and 387 bytes** at two observed checkpoints.
-- Gameplay validation for jump, Morph Ball, dodge, first-person aiming, missiles, concentration and other actions.
-- The actual contents and 100%-completion claim of the PAL save; **no Dolphin import or native save loading has been demonstrated**.
-- Physical Wii Remote/DolphinBar, a tested Windows build and optional HD/HDR/VRR/anti-aliasing modes.
-
-### Immediate priorities
-
-1. Establish **repeatable performance measurements**: the same binary has varied by more than a millisecond per frame between sessions.
-2. Profile and streamline the **vertex loader** and overhead around the recompiled PowerPC code.
-3. Reduce remaining Vulkan and synchronization costs while preserving exact output.
-4. Prepare GPU pipelines more predictably to avoid cold-cache startup stalls.
-5. Validate full-speed real-controller gameplay, then broaden scene and save-game coverage.
-
-For measurement methodology, optimization history, retained versus rejected experiments and remaining known failures, see the [development status](docs/BUILD_STATUS.md) and [development history](docs/DEVELOPMENT_LOG.md).
+Details and qualifications are in [current status](docs/BUILD_STATUS.md), [development history](docs/DEVELOPMENT_LOG.md) and the [roadmap](docs/ROADMAP.md).
 
 ## Development evidence and publication
 
-These results come from my **private Claude Code development reports dated 2 November 2026**. I have not independently rerun the underlying binaries for this public documentation update. I distinguish reported tests from features confirmed in a publicly available game.
+These results come from my **private Claude Code development reports through 3 November 2026**. I have not independently rerun the underlying binaries for this public documentation update. I distinguish reported tests from features confirmed in a publicly available game.
 
 I intend to publish a launcher through [GitHub Releases](https://github.com/Petrus-Canisius/Metroid-Other-M-Native-HD/releases) when it is ready. There is **no release date, public executable or established minimum PC specification**. The eventual setup is intended to use a player's **own local copy of the game**.
 
