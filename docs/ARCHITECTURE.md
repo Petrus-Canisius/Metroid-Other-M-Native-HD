@@ -33,38 +33,43 @@ Player's own Wii game copy (kept locally)
 
 **Player controls.** The Linux application uses SDL3 to accept real keyboard/mouse and gamepad input. In one physical Xbox Series X controller session, recorded inputs were fed back into the virtual Wii Remote. Comparing the replay with a no-input run confirmed **movement and beam firing by Samus**. Other actions have not yet been demonstrated. A future goal is to translate every required physical Wii Remote gesture to regular PC inputs and support an optional real Wii Remote through DolphinBar.
 
-**Graphics and window.** A software GX renderer remains the fidelity reference. A **Vulkan GPU renderer** draws into a real SDL3 window and records GX-derived graphics commands. The private runtime uses **GPU copy-to-texture, cached vertex transformations and light attenuation, two ordered transformation workers, parallel triangle assembly/clipping, an optimized TEV shader, four-thread XFB conversion and bounded Vulkan image recycling**. The most recent unchanged-code benchmark averaged **0.897×** in the training room, under host conditions measurably different from earlier sessions; **stable 1.0× is not validated**. Several Wii-specific effects are incomplete.
+**Graphics and window.** A software GX renderer remains a fidelity reference. The native SDL3/Vulkan implementation uses GPU EFB copies, cached vertex and lighting computations, two ordered transformation workers, parallel triangle assembly and clipping, optimized TEV shaders, four-thread XFB conversion and bounded Vulkan image reuse. **Clang/LLD ThinLTO** now optimizes the renderer; **eight in-flight Vulkan submission slots** (formerly four) reduce unnecessary blocking in the tested workload. The latest private benchmark is **~0.978×, 16.8–17.2 ms/frame** in the training room. **1.0× sustained and whole-game fidelity remain unverified.**
 
 **Sound.** Audio plays through the Linux audio device. A recent reported comparison found **156.7 seconds** identical to a reference recording in the tested sequence. That does not establish complete-game audio fidelity.
 
-**Reliability.** Repeated native executions are reproducible at the tested points. **28,167 internal test frames** remained unchanged through optimization; **7,686 GPU-made textures** matched CPU decoding. This protects against regressions, but **does not mean all game frames match Dolphin**. Memory differences of **135 and 387 bytes** remain at two Dolphin comparison checkpoints.
+**Reliability.** Internal reference checks remained stable across the latest retained optimizations, including **28,167 unchanged frames**, **4,671 checked GPU copy results**, selected audio and IPC checkpoints. The existing **29 fade-frame** discrepancies and **135/387-byte Dolphin memory differences** remain open.
 
-## Why performance is still limited
+## Current performance architecture
 
-The Wii game depends on specialized GPU memory, EFB/XFB copying, graphics state transitions and CPU/GPU synchronization. Translating its PowerPC code does not automatically optimize those dependencies for modern multicore CPUs and GPUs.
+This is a **native translated-game runtime** with multiple CPU stages feeding Vulkan rather than a conventional PC renderer. The key bottleneck is not simply arithmetic throughput: synchronization across **translated PowerPC CPU code → render thread → GPU → copy/readback stage → virtual Wii completion signals** determines how quickly the game resumes.
 
-### What has already improved
+### Demonstrated improvements
 
-- **GPU texture copies** avoid some CPU/GPU data round trips.
-- **Caching vertex and lighting calculations** removes duplicate work.
-- **Two ordered transformation workers** and **parallel triangle assembly/clipping** shift geometry preparation away from the render thread. A controlled A/B test showed about **0.54 ms/frame** saved in the same binary; adding a third worker was slower.
-- **Optimized TEV shaders** reduce some per-fragment and pipeline work.
-- **Vulkan image recycling** reduces thousands of driver allocations. The image cache is bounded and only reuses retired resources.
-- A separate fix eliminated a shared normal-cache access across threads, improving safety without a measurable speed gain.
+- **EFB copy-to-texture on the GPU**, and reuse of transformed vertices and lighting calculations.
+- **Two ordered transformation workers** and **parallel triangle assembly/clipping**, preserving command sequence. An earlier paired test demonstrated roughly **−0.54 ms/frame**; three workers performed worse.
+- **Optimized TEV shaders** and bounded **Vulkan image reuse**, cutting allocations and related driver overhead.
+- **ThinLTO with Clang/LLD** for renderer code, with a controlled **−0.58 ms/frame** average change over six paired comparisons. Experimental PGO was slower and is disabled.
+- **Accurate EFB copy destination ranges**, removing **8,038 false texture/copy waits** without a demonstrated mean frame-time gain. It was retained as a correctness and dependency-precision fix (local commit `709434c`).
+- **Eight in-flight Vulkan submission slots**, up from four. Six paired A/B comparisons indicated **−1.28 ms/frame** on average; three further comparisons indicated **−1.20 ms/frame**. Six slots did not materially help and twelve consumed more memory for no clear benefit. Local commit `4d7cb38`.
+- **Explicit floating-point contraction safeguards** after auditing 32,282 translated PowerPC functions and native runtime files. The translated code was byte-identical in the tested `-ffp-contract=off` comparison; the runtime arithmetic changed in four objects, but a targeted disc-time test found no change to computed emulated ticks (local commit `594ba1b`).
 
-### Why there is still a gap
+### What still limits the runtime
 
-Across five runs in the most recent session, the same code measured **0.879–0.917× speed (0.897× mean)**, about **18.58 ms/frame** in the 60 Hz training benchmark versus **16.67 ms/frame** at normal speed. **Previous sessions measured slower with no code difference**, so performance must be tested under controlled host and cache conditions before attributing small gains.
+In the latest measured path, the trace attributes about **4.65 ms/frame** to GPU execution, **2.43 ms/frame** to copy-stage readback/encoding and **2.26 ms/frame** to delay before GPU execution. These measurements represent parts of the measured critical path and are not automatic potential savings.
 
-Some remaining costs are distributed between **the GX vertex loader, native runtime helper calls, Vulkan command recording, GPU rendering and required synchronizations**. Moving geometric slope data to worker threads was tested and **reverted after a ~0.21 ms/frame average slowdown** caused by extra data movement and worker load.
+A read-only NVIDIA GPU check found the development RTX 4090 in low-power **P8** for much of the test. This is **not proof that driver power policy causes the remaining delay**. A temporary, reversible comparison was authorized, with no result yet reported. The eventual runtime must not require NVIDIA PowerMizer or other vendor-specific tuning.
 
-### Shader pipeline startup
+The latest reported **~0.978×** speed (16.8–17.2 ms/frame) is from the reproducible training-room benchmark, not the whole game. The P99 still reaches **20.2–20.5 ms**, and the 60 Hz speed target is approximately **16.67 ms/frame**. Shader pipeline cold-start can also cause long first-frame stutters: an isolated test measured **514 ms cold vs 82 ms warm**.
 
-Isolated tests measured **436 ms** for cold pipeline creation and **1 ms** warm; the first frame took **514 ms cold / 82 ms warm**. This explains the measured first-startup spike, but does not show that all gameplay stutters are solved. Proactive pipeline preparation is a candidate, subject to real measurements and memory cost.
+### Fidelity and hardware boundaries
 
-### Correctness boundaries
+- **28,167 internal regression frames** remain identical through retained changes; the latest relevant suite checked **4,671 GPU copy results** without differences.
+- **753/753 translator tests, 3/3 input tests, selected 156.73 seconds of audio and IPC 4/35** matched their internal references.
+- The Vulkan/software comparison still has **29 differing fade frames** and **98.9016% sample pixel agreement**; separate Dolphin memory comparisons still differ by **135/387 bytes**.
+- The CPU instruction-set baseline is **x86-64-v3** (including AVX2), with no requirement for AVX-512 or a specific Intel CPU. Vulkan is intended to remain portable to compatible NVIDIA and AMD GPUs, but **multi-hardware benchmarks have not been performed**.
+- RAM use rose from about **863 MB** to about **1,041 MB** with eight submission slots on the development PC; this is not a system-requirement claim.
 
-**28,167 internal regression frames** remained identical across the reported test paths; **7,687 GPU-produced textures** matched a CPU decoder in the exercised cases. These are **not full-game Dolphin equivalence checks**. The software/Vulkan comparison still has **29 differing fade frames**, and memory at two checkpoints differs from Dolphin by **135/387 bytes**. An audio reference segment of **156.73 seconds** matched; full-game audio fidelity remains to be tested.
+Engine improvements target shared subsystems and should benefit multiple levels. **Representative scenes will still need testing**, but there is no plan to hand-optimize each room as an independent engine.
 
 ## What is still missing
 
