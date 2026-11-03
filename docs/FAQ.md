@@ -12,7 +12,7 @@ The latest private reports record **32,282 translated PowerPC functions**, with 
 
 ## Can I play the game now?
 
-**There is no public build or downloadable playable version.** A private Ubuntu prototype opens a real SDL3/Vulkan game window, plays audio and reads a physical Xbox controller. Some actions work, but it remains slower than normal speed and has not been validated across the game.
+**There is no public build or downloadable playable version.** A private Ubuntu prototype opens a real SDL3/Vulkan game window, plays audio and reads a physical Xbox controller. Some actions work, and a training-room benchmark is close to normal speed, but **sustained 1.0× and full-game compatibility are unverified**.
 
 ## Can Samus already be controlled?
 
@@ -20,15 +20,17 @@ In an earlier physical Xbox Series X controller session, the inputs were recorde
 
 ## How fast is the native prototype?
 
-In the latest session, **the same, unchanged runtime** measured **0.879–0.917× normal speed**, **0.897× average over five runs**, in the deterministic training-room benchmark. Its average processing time was approximately **18.58 ms/frame**, versus about **16.67 ms** required for the tested 60 Hz simulation pace.
+The **latest private training-room benchmark** reports approximately **0.978× simulation speed** (**16.8–17.2 ms/frame**) after increasing in-flight Vulkan submission slots from four to eight. The six-pair alternating A/B comparison showed an average **−1.28 ms/frame**, with an additional three-pair check reporting **−1.20 ms/frame**. Renderer ThinLTO had previously saved **~0.58 ms/frame** in controlled pairs.
 
-An earlier session reported only **0.835–0.848× with the same code** under different host conditions. Therefore **0.897× is an observed benchmark, not proof of a newly coded optimization or stable 0.90× gameplay**. Measured performance may change with the background workload, CPU/GPU clock behavior and cache state.
+The tested 60 Hz reference is approximately **16.67 ms/frame for normal-speed simulation**. The current **P99 is about 20.2–20.5 ms**, so the result does **not** demonstrate perfectly smooth, sustained 1.0×, and it applies only to the fixed training-room scenario. No full-game benchmark has been completed. The performance multiplier is not the project's completion percentage.
 
 ## What are the most important graphics and CPU improvements?
 
-Recent retained improvements include GPU texture copies, caching repeated vertex and lighting calculations, two ordered geometry workers, a faster TEV shader, bounded Vulkan image reuse and **parallel triangle assembly and clipping**. The latter produced a repeatable **~0.54 ms/frame** gain in an alternating A/B comparison.
+The private implementation uses cached vertex and lighting calculations, GPU EFB texture copies, two ordered transformation workers, parallel triangle assembly/clipping, optimized TEV shaders and bounded Vulkan image reuse.
 
-A proposed optimization that moved geometric slope calculation to worker threads was **reverted** after a **~0.21 ms/frame average slowdown**. Keeping correct images is necessary, but not sufficient, to justify more parallel processing.
+**Newer measured improvements:** Clang/LLD renderer **ThinLTO (~−0.58 ms/frame)** and **eight simultaneous Vulkan submission slots (~−1.28 ms/frame on six paired runs)**. The eight-slot version uses around **1,041 MB RAM** on the development system, compared with **863 MB** for four slots.
+
+An EFB memory-range correction eliminated **8,038 false waits** but produced no demonstrated average frame-time improvement. Experimental PGO was slower and was not adopted. All retained improvements were subjected to scoped regression testing.
 
 ## Why does the game sometimes stutter at startup?
 
@@ -74,7 +76,7 @@ These are **future goals**, not current features: 1080p/1440p/4K, carefully adap
 
 ## What computer hardware will I need?
 
-**Minimum hardware requirements have not been determined.** Development measurements currently use a high-end RTX 4090 system, so they cannot establish performance on lower-end PCs.
+**Full minimum hardware requirements have not been determined.** The official CPU instruction-set baseline is **x86-64-v3** (including AVX2), but that alone does not define a tested performance requirement. Development measurements use an Intel i7-14700KF and RTX 4090, so compatibility or performance on other systems is unverified. The Vulkan renderer is intended to support compatible NVIDIA and AMD GPUs without requiring NVIDIA-specific settings.
 
 ## Will I need to own the game?
 
@@ -90,7 +92,7 @@ There is **no release date**. [GitHub Releases](https://github.com/Petrus-Canisi
 
 ## How are the development claims checked?
 
-The figures summarize **private Claude Code reports**, not independent verification of a public binary. Each statement is scoped: training-room speed is not full-game speed, an internal image regression is not whole-game Dolphin equivalence, and a selected audio capture is not all audio. The latest experiments also show that **the same code may benchmark differently on different days**. See [Current development status](BUILD_STATUS.md) for measured details and uncertainty.
+The figures summarize **private Claude Code reports**, not independent verification of a public binary. Each statement is scoped: training-room speed is not full-game speed, an internal image regression is not whole-game Dolphin equivalence, and a selected audio capture is not all audio. Some experiments have reproducible **paired A/B code improvements**, while between-session clock and workload differences can still change absolute results. A read-only GPU diagnostic found low-power NVIDIA P8 behavior, but its causal effect has not yet been established. See [Current development status](BUILD_STATUS.md) for measured details and uncertainty.
 
 ## Licensing
 
