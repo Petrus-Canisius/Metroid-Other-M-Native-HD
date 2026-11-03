@@ -8,7 +8,7 @@ This page summarizes **private Claude Code development reports**, not an indepen
 
 ## Summary
 
-The private Ubuntu native runtime has an SDL3/Vulkan window, audio and physical Xbox input. Movement and firing have been demonstrated by a recorded controller replay. The **latest reported training-room benchmark is approximately 0.978× normal speed (16.8–17.2 ms/frame)** after a **measured, retained Vulkan optimization**. **Stable 1.0×, other game areas and a complete PC version remain unverified.** There is no public build.
+The private Ubuntu native runtime has an SDL3/Vulkan window, audio and physical Xbox input. Movement and firing have been demonstrated by a recorded controller replay. The **latest reported training-room benchmark has reached 1.013× average simulation speed**, the **first measured result above 1.0×**, following a conditionally specialized Vulkan alpha-test shader. **Sustained frame pacing, stable 1.0× in other scenes and complete gameplay remain unverified.** There is no public build.
 
 The latest progress is drawn from **private Claude Code engineering reports of 3 November 2026**, not a publicly downloadable or independently rerun test binary. Results apply to the development machine and tested segment.
 
@@ -18,8 +18,8 @@ The latest progress is drawn from **private Claude Code engineering reports of 3
 | --- | --- | --- |
 | PowerPC translation | **32,282 translated functions**, **753/753** translator tests | Does not imply full-game correctness |
 | Native gameplay | Linux SDL3/Vulkan window, audio, physical Xbox input; recorded replay shows movement and firing | Further actions and longer gameplay untested |
-| Fixed training benchmark | **~0.978×, 16.8–17.2 ms/frame** with eight in-flight Vulkan submission slots | Not stable 1.0× or all-scene verification; P99 **20.2–20.5 ms** |
-| Graphics | **28,167 identical internal regression frames**; **4,671 GPU copies checked** with no observed difference in the latest suite | **29 fade frames** still differ in Vulkan/software sample |
+| Fixed training benchmark | **1.013× average** after specialized alpha-test shader; **−0.52 ms/frame** across **6 A/B pairs**, P99 improved | First mean result over 1.0× in this scene; not verified on other levels or as steady frame pacing |
+| Graphics | **28,167-frame established internal regression suite**; **4,671 GPU copies** checked in preceding suite; alpha-test candidate reported matching frames and full non-regression passing | **29 fade frames** still differ in Vulkan/software sample |
 | Sample pixel comparison | **98.9016%** of pixels matched | Not full-game Dolphin equivalence |
 | Memory | IPC checkpoints 4 and 35 match the project's baseline | Dolphin comparison still differs by **135/387 bytes** |
 | Sound | **156.73 seconds** of tested reference audio unchanged | Not whole-game audio validation |
@@ -43,12 +43,25 @@ Benchmark: **438–470 simulated seconds**, approximately 60 Hz; the nominal **1
 | Earlier faster session, unchanged code | ~18.58 ms aggregate | ~0.897× | **Environment-dependent; no code gain claimed** |
 | Clang/LLD renderer ThinLTO | 18.15 ms mean vs 18.73 ms without | ~0.918× vs ~0.890× | **−0.58 ms/frame**, faster in **6/6 paired A/B runs** |
 | **Eight Vulkan in-flight submission slots** | **16.8–17.2 ms** | **~0.978×** | **−1.28 ms/frame** across six paired runs; separate three-pair check **−1.20 ms/frame** |
+| **Conditional alpha-test shader specialization (latest)** | **Mean speed reported at 1.013×** | **1.013× mean** | **−0.52 ms/frame** across six paired A/B runs; better P99, matching tested frames |
 
 ### Why eight Vulkan submission slots matter
 
 With four slots, the render thread frequently waited for a slot while GPU readback/copy work held previous slots. Event tracing identified roughly **seven synchronization events per frame** in the tested window, with **3.96 ms/frame of slot acquisition within 5.66 ms/frame of measured render-thread flushing/waiting**. Using **eight slots** allows more useful work in flight. Six slots showed no clear improvement; twelve used more memory without a clear speed gain.
 
 Reported slot sweep: **4 slots: 18.0–18.8 ms, 863 MB RAM; 6: 18.1–18.7 ms, 954 MB; 8: 16.8–17.1 ms, 1,041 MB; 12: 16.7–17.2 ms, 1,232 MB**. Results were measured on the development machine, not on Intel/AMD and NVIDIA/AMD cross-vendor comparison systems. Local code commit **`4d7cb38`**.
+
+### New milestone: 1.013× average in training-room benchmark (alpha-test shader specialization)
+
+The latest private Claude Code session reports the **first mean simulation speed over 1.0×** on the fixed training-room benchmark: **1.013×**, from **six alternating A/B pairs** with an **average 0.52 ms/frame improvement** and better P99 versus the old alpha-test shader path. The updated candidate uses the emulated alpha-test result classification to select a **fragment-shader variant without `discard` only when the alpha-test condition always passes**; conditional tests still use the required path. This is a **general renderer change**, not a room-specific optimization.
+
+A deliberately trivial fragment shader produced mismatching frames (demonstrating a useful negative control). The retained alpha-test specialization produced **identical tested frames** and the developer reported that the **full regression suite passed**. The shared report did not include exact new P99 values or a verifiable local commit hash for this change.
+
+**Milestone boundary:** **1.013× is an average of the tested scene**, not a guarantee that every frame meets 16.67 ms, that the entire game runs at normal speed, or that all Dolphin-reference differences are resolved. No publicly playable build exists.
+
+**PowerMizer diagnostic:** The NVIDIA driver setting could not be queried or changed using NV-CONTROL under the host's Wayland/Xwayland session. The test was not performed; GPU settings were left unchanged. The improvement is in the Vulkan application code, not a driver override.
+
+**In progress:** A distinct TEV shader specialization experiment using Vulkan specialization constants has been built and a **six-pair A/B test was running** at the end of the report. Its outcome is **not yet known**. Do not count it as a proven optimization.
 
 ### Other retained corrections
 
@@ -57,15 +70,15 @@ Reported slot sweep: **4 slots: 18.0–18.8 ms, 863 MB RAM; 6: 18.1–18.7 ms, 9
 - **Floating-point contraction audit**: 32,282 translated functions had byte-identical generated machine code with/without `-ffp-contract=off` in the tested Clang setup. Four native runtime object files did change; a targeted simulated-disc-timing test found no change in final emulated ticks across 20 million samples. The flag was retained as a guard against unwanted contraction, **`594ba1b`**.
 - Previously retained: GPU EFB copy-to-texture, vertex and lighting reuse, two ordered transformation workers, parallel assembly/clipping, TEV shader optimization, bounded Vulkan image recycling and a threading-safety fix.
 
-### Remaining bottleneck and investigation
+### Earlier bottleneck investigation (before alpha-test specialization)
 
 The latest trace attributed approximately **4.65 ms/frame** to GPU execution, **2.43 ms/frame** to copy-stage readback/encoding and **2.26 ms/frame** to delay before GPU execution on the analyzed critical path. These are **trace-specific allocations, not independently additive frame-time savings**.
 
-Read-only NVIDIA telemetry showed the development RTX 4090 in low-power **P8** for much of the benchmark (reported **210 MHz core / 405 MHz memory**). That observation **does not establish causality**. A temporary, reversible PowerMizer A/B diagnostic has been authorized; **no outcome is reported**. The public project must not require an NVIDIA-only driver setting; Vulkan portability remains a goal.
+Read-only NVIDIA telemetry showed the development RTX 4090 in low-power **P8** for much of the benchmark (reported **210 MHz core / 405 MHz memory**). That observation **does not establish causality**. An authorized temporary PowerMizer test **could not be performed** because NV-CONTROL was unavailable under Wayland/Xwayland; the GPU configuration was left unchanged. The subsequent **alpha-test specialization** improved speed without driver changes. The public project must not require NVIDIA-only settings; Vulkan portability remains a goal.
 
 ### Correctness, measurement and stutters
 
-The latest retained change passed **28,167 internal frame comparisons, 753/753 translator tests, 3/3 input tests, 156.73 seconds of selected audio checks, IPC checkpoints 4/35** and **4,671 checked GPU copies**. This is regression protection, not proof that graphics perfectly match Dolphin. The **29 differing fade frames**, **98.9016%** sample pixel agreement and **135/387-byte Dolphin memory gaps** remain.
+The preceding eight-slot optimization passed **28,167 internal frame comparisons, 753/753 translator tests, 3/3 input tests, 156.73 seconds of selected audio checks, IPC checkpoints 4/35** and **4,671 checked GPU copies**. The newer alpha-test specialization was reported to preserve tested frames and to pass the full non-regression suite. This is regression protection, not proof that graphics perfectly match Dolphin. The **29 differing fade frames**, **98.9016%** sample pixel agreement and **135/387-byte Dolphin memory gaps** remain.
 
 Frame-time tails matter: the current **P99 is approximately 20.2–20.5 ms**. An earlier isolated shader cache experiment found **514 ms for a cold first frame vs 82 ms warm**; more scene coverage and pipeline-cache testing are still needed. Host conditions can significantly affect frame-time averages, so new performance claims require paired A/B tests.
 
@@ -83,9 +96,9 @@ A locally obtained European **R3OP** save was inspected **read-only**. It is a W
 
 ## Next priorities
 
-1. Establish whether **GPU low-power P8 state** materially affects the training-room critical path, using the authorized reversible A/B diagnostic; restore the original driver setting and measure any application-side solution under normal settings.
+1. Finish the **six-pair TEV shader specialization A/B comparison** currently underway; report its result before claiming any further gain. The separate PowerMizer diagnostic was unavailable under Wayland, and no driver settings were changed.
 2. Reduce **GPU execution, submission delay and copy-stage latency** without changing Wii synchronization semantics or making NVIDIA-specific driver settings a prerequisite.
-3. Reproducibly reach **sustained 1.0×** with acceptable P95/P99 and no audio desynchronization; 0.978× applies only to the fixed training benchmark.
+3. **Consolidate and extend the first 1.013× average benchmark**, achieving sustainable 1.0× with acceptable P95/P99 and no audio desynchronization. The new result applies only to the fixed training benchmark.
 4. Broaden representative scene, gameplay-input and graphical-fidelity tests rather than optimize every room individually; retain regression coverage.
 5. Investigate shader cold-start stalls, the remaining **29 fade frames** and **135/387-byte** Dolphin differences.
 6. Validate the protected PAL save, full game progression, and eventually Windows compatibility without publishing private or proprietary files.
