@@ -2,87 +2,78 @@
 
 [Project overview](../README.md) · [Roadmap](ROADMAP.md) · [Development log](DEVELOPMENT_LOG.md)
 
-**Documentation updated: 3 November 2026 · Latest private reports: 2 November 2026 · Interactive Linux prototype · No public release**
+**Documentation updated: 3 November 2026 · Latest private reports: 3 November 2026 · Interactive Linux prototype · No public release**
 
 This page summarizes **private Claude Code development reports**, not an independently reproduced public build.
 
 ## Summary
 
-An **interactive Linux SDL3/Vulkan prototype** displays native game images, outputs sound and accepts a **physical Xbox Series X controller**. Recorded controller input was replayed and compared with a no-input run; **Samus moved and fired** in the training room. This does not validate full gameplay or a normal-speed public application.
+The private Ubuntu native runtime has an SDL3/Vulkan window, audio and physical Xbox input. Movement and firing have been demonstrated by a recorded controller replay. The **latest reported training-room benchmark is approximately 0.978× normal speed (16.8–17.2 ms/frame)** after a **measured, retained Vulkan optimization**. **Stable 1.0×, other game areas and a complete PC version remain unverified.** There is no public build.
 
-The latest five runs of the unchanged code achieved **0.879–0.917× normal simulation speed**, with a reported **0.897× average** on the training-room benchmark. This is **not attributable to a new code optimization**: the same code had measured approximately **0.835–0.848×** in the prior session. Benchmarks depend on host load, clock behavior and cache state, and need a more tightly controlled measurement protocol.
+The latest progress is drawn from **private Claude Code engineering reports of 3 November 2026**, not a publicly downloadable or independently rerun test binary. Results apply to the development machine and tested segment.
 
-## Development evidence and limits
+## Evidence and current limitations
 
-| Area | Demonstrated in private reports | Open limit |
+| Area | Reported result | Important limitation |
 | --- | --- | --- |
-| Game translation | **32,282 PowerPC functions** translated; **753/753** translator tests pass | Whole-game execution and correctness unproven |
-| Wii services | Boot and menu paths, IOS/NAND services, memory and clock simulation, virtual Wii Remote | Some reference discrepancies and untested functionality |
-| First gameplay | Samus visible in training room; physical Xbox-originated input replay causes **movement and firing** | Jump, Morph Ball, dodge, first-person, missiles, concentration not yet validated |
-| Linux graphics | SDL3 window, Vulkan rendering; several GPU and CPU optimizations retained | Missing GX effects; below normal speed |
-| Input suite | **3/3** automated input tests pass | Not proof of all in-game control mappings |
-| GPU copies | **7,687** GPU-generated textures verified against CPU decoding in the reported suite | Only exercised formats and scenes |
-| Frame regressions | **28,167 reference frames** remained unchanged through tested optimization paths | Internal equality is **not** equivalent to all-frame equality with Dolphin |
-| Audio | **156.73 seconds** matched a selected reference capture | Not full-game audio coverage |
-| Memory checkpoints | Native runs repeat deterministically at selected points | **135 and 387 bytes** still differ against Dolphin at two checkpoints |
-| Memory footprint | About **857 MB RAM / 78 MB VRAM** in latest measured session | Single development system; no verified minimum specifications |
-| European save | Wii SD export identified as title **R3OP**, with **three encrypted slots** | Completion percentage, Dolphin import and native loading unverified |
-| Windows | Some portable and Windows-specific foundations written | **No Windows compilation or execution** |
+| PowerPC translation | **32,282 translated functions**, **753/753** translator tests | Does not imply full-game correctness |
+| Native gameplay | Linux SDL3/Vulkan window, audio, physical Xbox input; recorded replay shows movement and firing | Further actions and longer gameplay untested |
+| Fixed training benchmark | **~0.978×, 16.8–17.2 ms/frame** with eight in-flight Vulkan submission slots | Not stable 1.0× or all-scene verification; P99 **20.2–20.5 ms** |
+| Graphics | **28,167 identical internal regression frames**; **4,671 GPU copies checked** with no observed difference in the latest suite | **29 fade frames** still differ in Vulkan/software sample |
+| Sample pixel comparison | **98.9016%** of pixels matched | Not full-game Dolphin equivalence |
+| Memory | IPC checkpoints 4 and 35 match the project's baseline | Dolphin comparison still differs by **135/387 bytes** |
+| Sound | **156.73 seconds** of tested reference audio unchanged | Not whole-game audio validation |
+| Controls | **3/3** automated input tests | Jump, Morph Ball, dodge, first-person, missiles and concentration still need verification |
+| Memory footprint | About **1,041 MB RAM** with eight slots (previous four-slot build ~863 MB) | Not a minimum-spec measurement |
+| Save | Private European R3OP SD export, three encrypted save slots | Claimed 100% progress, Dolphin import and native reading unverified |
+| Windows | Portability groundwork exists | No compiled/tested Windows build |
 
-## Training-room performance: historical measurements
+## Training-room benchmark: reproducible optimizations
 
-Reported benchmark window: **438–470 seconds of simulated game time**, approximately 1,918 simulated frames. Timing statistics are **per-frame processing time**, not proof of stable presentation. Results across sessions are affected by host conditions.
+Benchmark: **438–470 simulated seconds**, approximately 60 Hz; the nominal **1.0× target is 16.67 ms/frame**. Speed ratios reflect simulated timing in this fixed scenario, **not development-completion percentages**.
 
-| Stage | Mean frame time (approx.) | Simulation speed | Evidence/qualification |
+| Stage | Reported time/frame | Reported speed | Evidence |
 | --- | ---: | ---: | --- |
-| Early CPU/GPU path | 45.27 ms | 0.369× | Starting point before major optimization |
-| GPU copy and geometry optimizations | 28.98 ms | 0.576× | GPU texture copies, vertex reuse, software-clear removal, parallel XFB conversion |
-| Lighting reuse and parallel geometry | 22.24 ms | 0.750× | Reusing light attenuation and two ordered transformation workers |
-| Optimized TEV shader and synchronization | 20.7–21.3 ms | 0.786–0.805× | Shader simplification preserving output |
-| Vulkan image recycling | 20.64–20.66 ms | 0.807–0.808× | Paired test: **~1.3 ms** frame-time gain from reusing GPU images |
-| Parallel triangle assembly/clipping | 19.67–19.98 ms | 0.835–0.848× | Paired A/B/A/B/A/B: **~0.54 ms** gain vs same-binary sequential mode |
-| **Most recent session, same code** | **18.19–18.97 ms; ~18.58 ms aggregate** | **0.879–0.917×; 0.897× mean** | **No new optimization retained.** Improvement between sessions cannot be attributed to code |
+| Early CPU/GPU path | 45.27 ms | 0.369× | Early baseline |
+| GPU copies and geometry | 28.98 ms | 0.576× | Retained combined changes |
+| Lighting and two transformation workers | ~22.24 ms | ~0.750× | Retained |
+| TEV optimization | 20.7–21.3 ms | ~0.786–0.805× | Retained |
+| Vulkan image recycling | 20.64–20.66 ms | ~0.807–0.808× | Paired improvement |
+| Parallel triangle assembly/clipping | 19.67–19.98 ms | ~0.835–0.848× | About **−0.54 ms/frame** in paired tests |
+| Earlier faster session, unchanged code | ~18.58 ms aggregate | ~0.897× | **Environment-dependent; no code gain claimed** |
+| Clang/LLD renderer ThinLTO | 18.15 ms mean vs 18.73 ms without | ~0.918× vs ~0.890× | **−0.58 ms/frame**, faster in **6/6 paired A/B runs** |
+| **Eight Vulkan in-flight submission slots** | **16.8–17.2 ms** | **~0.978×** | **−1.28 ms/frame** across six paired runs; separate three-pair check **−1.20 ms/frame** |
 
-The 60 Hz test has a nominal **16.67 ms/frame** budget for **1.0×**. The most recent observed aggregate is approximately **1.9 ms/frame** away, but this estimate is conditional on the latest host environment. **0.90× reproducible, 0.95× and stable 1.0× are not demonstrated.** A simulation-speed percentage is **not** a project-completion percentage.
+### Why eight Vulkan submission slots matter
 
-### Retained engineering changes
+With four slots, the render thread frequently waited for a slot while GPU readback/copy work held previous slots. Event tracing identified roughly **seven synchronization events per frame** in the tested window, with **3.96 ms/frame of slot acquisition within 5.66 ms/frame of measured render-thread flushing/waiting**. Using **eight slots** allows more useful work in flight. Six slots showed no clear improvement; twelve used more memory without a clear speed gain.
 
-- **GPU-based EFB copy-to-texture** and reference-verified encodings, reducing redundant CPU/GPU round trips.
-- **Vertex reuse** and **lighting attenuation reuse**, avoiding repeated calculations per primitive/light.
-- **Two transformation threads** with strict primitive ordering; 3 threads were repeatedly slower.
-- **Less producer-consumer cache contention**, including caching an already-known minimum ring-buffer tail.
-- **TEV shader optimization**, reducing dynamic indexing and unnecessary fragment work.
-- **Bounded Vulkan image recycling** (`8f19390`, up to 512 reusable images), reducing repeated driver allocations. Related sample share in the render thread fell from **16.7% to 0.8%**.
-- **Correction of a concurrently accessed normal cache** (`4bcf93d`), a stability fix without a measurable speed gain.
-- **Parallel triangle assembly, clipping and capture** (`24707d1`), moving work off the render thread while preserving ordering and triangle counts.
+Reported slot sweep: **4 slots: 18.0–18.8 ms, 863 MB RAM; 6: 18.1–18.7 ms, 954 MB; 8: 16.8–17.1 ms, 1,041 MB; 12: 16.7–17.2 ms, 1,232 MB**. Results were measured on the development machine, not on Intel/AMD and NVIDIA/AMD cross-vendor comparison systems. Local code commit **`4d7cb38`**.
 
-### Rejected experiments and measurement discipline
+### Other retained corrections
 
-Several plausible changes were tested and reverted when they did not improve overall speed, including futex-based worker sleeps, GPU encoding of EFB-to-RAM copies, demand-driven synchronization and extra transformation threads.
+- **ThinLTO** on the renderer under **Clang 23.1.4 / LLD 23**; experimental **PGO was rejected** after slower measured performance (~+0.19 ms/frame) and partial profile incompatibility. Local code/documentation commits **`b951371`**, **`606fcce`**.
+- **Accurate EFB destination ranges** removed **8,038 unnecessary copy-before-texture waits** caused by 4–8× overestimation. No proven mean frame-time improvement (**−0.04 ms/frame** over six pairs); an accuracy/dependency fix, **`709434c`**.
+- **Floating-point contraction audit**: 32,282 translated functions had byte-identical generated machine code with/without `-ffp-contract=off` in the tested Clang setup. Four native runtime object files did change; a targeted simulated-disc-timing test found no change in final emulated ticks across 20 million samples. The flag was retained as a guard against unwanted contraction, **`594ba1b`**.
+- Previously retained: GPU EFB copy-to-texture, vertex and lighting reuse, two ordered transformation workers, parallel assembly/clipping, TEV shader optimization, bounded Vulkan image recycling and a threading-safety fix.
 
-Most recently, moving **slope calculation in `make_record`** to transformation threads produced matching images and triangle counts but **~0.21 ms/frame average slowdown** across three alternating A/B comparisons. The experiment was rolled back; **`17897ac` documents the negative result**, not a new runtime optimization.
+### Remaining bottleneck and investigation
 
-Because the **same native binary** was measured at roughly 19.7–20.0 ms/frame in one session and around 18.6 ms in another, future experiments must control host load, CPU/GPU clock behavior, GPU pipeline cache state and background activity. The private reports explicitly avoid attributing between-session differences to code without paired measurements.
+The latest trace attributed approximately **4.65 ms/frame** to GPU execution, **2.43 ms/frame** to copy-stage readback/encoding and **2.26 ms/frame** to delay before GPU execution on the analyzed critical path. These are **trace-specific allocations, not independently additive frame-time savings**.
 
-### Pipeline-cache and stutter investigation
+Read-only NVIDIA telemetry showed the development RTX 4090 in low-power **P8** for much of the benchmark (reported **210 MHz core / 405 MHz memory**). That observation **does not establish causality**. A temporary, reversible PowerMizer A/B diagnostic has been authorized; **no outcome is reported**. The public project must not require an NVIDIA-only driver setting; Vulkan portability remains a goal.
 
-A controlled, isolated empty-cache/warm-cache experiment found:
+### Correctness, measurement and stutters
 
-| State | Pipeline creation | First rendered frame | Subsequent frames in that test |
-| --- | ---: | ---: | --- |
-| **Cold** | 436 ms | 514 ms | None above 50 ms |
-| **Warm** | 1 ms | 82 ms | None above 50 ms |
+The latest retained change passed **28,167 internal frame comparisons, 753/753 translator tests, 3/3 input tests, 156.73 seconds of selected audio checks, IPC checkpoints 4/35** and **4,671 checked GPU copies**. This is regression protection, not proof that graphics perfectly match Dolphin. The **29 differing fade frames**, **98.9016%** sample pixel agreement and **135/387-byte Dolphin memory gaps** remain.
 
-The tested ~520 ms startup spike was due to **cold Vulkan pipeline compilation**. This does not prove every later game scene is stutter-free. Preparing known pipelines ahead of time and maintaining a suitable cache are possible future improvements. The cold-cache experiments were isolated from the developer's usual caches.
+Frame-time tails matter: the current **P99 is approximately 20.2–20.5 ms**. An earlier isolated shader cache experiment found **514 ms for a cold first frame vs 82 ms warm**; more scene coverage and pipeline-cache testing are still needed. Host conditions can significantly affect frame-time averages, so new performance claims require paired A/B tests.
 
-### Graphics, audio, determinism and validation
+## CPU target and cross-platform constraints
 
-- **28,167 internal regression frames** remained identical in the cited test sequences, including the experiments that were reverted.
-- **7,687 GPU-produced copy textures** previously matched CPU decoding. This is format-/scene-scoped evidence.
-- The Vulkan/software comparison continues to report **98.9016% pixel agreement** in its tested sample, with **29 differing fade frames**. Indirect textures, fog, mipmaps and parts of blending/dithering still need implementation or correction.
-- Native memory snapshots match their previous baseline, while **Dolphin differences of 135 and 387 bytes** remain unresolved.
-- The previously validated **156.73 seconds of audio**, **753/753 translator tests** and **3/3 input tests** remain the latest reported full-suite results. The newest slope-only session did **not** rerun the full suite after its complete rollback; it used the same previously validated runtime binary.
-- No Vulkan validation-layer run has been reported because the required layer was not installed.
+**x86-64-v3** is the selected minimum CPU instruction-set target (including AVX2). The project avoids a required AVX-512 path, CPU-model-specific builds and dependencies on Intel hybrid-core scheduling. It is intended to work with compatible Intel and AMD processors and standard Vulkan backends on compatible NVIDIA and AMD GPUs, subject to actual testing.
+
+This instruction-set decision is **not a complete minimum-system-specification announcement**. The development RTX 4090 and the tested RAM usage are not representative minimum requirements. No Windows build has yet been compiled or tested.
 
 ## PAL save: inspection completed, loading unverified
 
@@ -92,12 +83,12 @@ A locally obtained European **R3OP** save was inspected **read-only**. It is a W
 
 ## Next priorities
 
-1. **Measurement science:** quantify host and between-session variability with paired A/B tests, controlled cache state and CPU/GPU load observations.
-2. **Vertex loader:** profile dominant GX formats, memory accesses and decoding; test targeted specialization with a generic fallback.
-3. **Runtime overhead:** profile PowerPC helper transitions; preserve the floating-point register safeguards unless the ABI requirements are proved.
-4. **Vulkan and startup:** reduce remaining critical-path cost and investigate proactive pipeline creation without moving stutters into gameplay.
-5. Achieve and verify **0.90×, 0.95× and sustained 1.0×**; then validate longer sessions, real-controller actions and more scenes.
-6. Use the **PAL save only as a protected, private test fixture** once loading is safe and performance sufficiently stable.
+1. Establish whether **GPU low-power P8 state** materially affects the training-room critical path, using the authorized reversible A/B diagnostic; restore the original driver setting and measure any application-side solution under normal settings.
+2. Reduce **GPU execution, submission delay and copy-stage latency** without changing Wii synchronization semantics or making NVIDIA-specific driver settings a prerequisite.
+3. Reproducibly reach **sustained 1.0×** with acceptable P95/P99 and no audio desynchronization; 0.978× applies only to the fixed training benchmark.
+4. Broaden representative scene, gameplay-input and graphical-fidelity tests rather than optimize every room individually; retain regression coverage.
+5. Investigate shader cold-start stalls, the remaining **29 fade frames** and **135/387-byte** Dolphin differences.
+6. Validate the protected PAL save, full game progression, and eventually Windows compatibility without publishing private or proprietary files.
 
 ## Publication boundary
 
