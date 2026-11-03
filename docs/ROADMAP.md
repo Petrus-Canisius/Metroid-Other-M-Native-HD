@@ -8,30 +8,32 @@ My goal is a **faithful, fluent, fully controllable native PC version** of *Metr
 
 | Stage | Purpose | Current status |
 | --- | --- | --- |
-| **1. Reconstruct the game program** | Translate PowerPC game code for PC execution | **32,282 functions** reported translated; **753/753** translator tests passing |
+| **1. Reconstruct the game program** | Translate PowerPC game code for PC execution | **32,282 functions** reported translated; **753/753** translator tests in the established suite |
 | **2. Rebuild Wii services** | Disc, memory, timing, audio and virtual Wii Remote | Startup and selected paths run; known fidelity gaps remain |
 | **3. Produce real images and sound** | Native graphics and audio | Demonstrated in the private Linux SDL3/Vulkan runtime |
-| **4. Provide direct PC interaction** | Conventional input via a dedicated PC application | Physical Xbox input, recorded movement and beam fire demonstrated; full mappings unverified |
-| **5. Reach normal-speed gameplay** | Stable speed, frame pacing and responsive controls | **~0.978× in one training-room benchmark (16.8–17.2 ms/frame)**; **1.0× sustained not demonstrated** |
+| **4. Provide direct PC interaction** | Conventional input in a dedicated PC application | Xbox input, recorded movement and beam fire demonstrated; full mappings unverified |
+| **5. Reach normal-speed gameplay** | Stable speed, frame pacing and responsive controls | **First fixed training-room benchmark above 1.0×: 1.013× average**, after conditional Vulkan alpha-test specialization; **steady all-scene 1.0× not demonstrated** |
 | **6. Validate the full game** | Scenes, mechanics, progression, saves and longer sessions | Not demonstrated; representative scenarios and regression automation required |
 | **7. Improve presentation** | HD/4K, 16:9/21:9, optional AA, HDR10 and VRR | Future goals, not completed player features |
 | **8. Windows and distribution** | Portable build, test, launcher, release and compliance | No tested Windows build; no public playable release |
 
-## Immediate priority: move from a fast benchmark to robust normal-speed gameplay
+## Immediate priority: consolidate the first 1.0× milestone
 
-The latest private A/B results report a **~0.978×** training-room benchmark, after increasing in-flight Vulkan submissions from four to eight. **Six alternating pairs found ~−1.28 ms/frame improvement**, confirmed by three further pairs (~−1.20 ms/frame). ThinLTO delivered an earlier ~−0.58 ms/frame improvement; PGO slowed the scene and was rejected. A corrected EFB memory-range calculation eliminated false waits without proven mean performance gain.
+The latest private engineering session reports **1.013× average simulation speed** on the fixed training-room benchmark after a conditionally specialized Vulkan alpha-test shader. The optimization removes fragment `discard` only when the emulated alpha test always passes. **Six alternating A/B comparisons** measured **−0.52 ms/frame on average** with improved P99 and unchanged tested reference frames. The full non-regression suite was reported passing.
 
-The next optimization experiment is to test whether the development RTX 4090's low-power P8 state affects measured GPU execution latency. The test is **temporary, reversible and diagnostic only**; **results are not yet available** and a player-facing NVIDIA setting is not an acceptable dependency.
+Earlier, increasing Vulkan submission slots from four to eight produced a **−1.28 ms/frame** average gain in six paired measurements; renderer ThinLTO yielded **−0.58 ms/frame** in six paired comparisons. These are shared engine improvements, **not per-level patches**.
+
+The temporary NVIDIA PowerMizer diagnostic **could not be performed** under Wayland/Xwayland because NV-CONTROL was unavailable; no driver policy was modified. A separate **TEV specialization** experiment is being measured in six A/B pairs, with **no reported outcome yet**.
 
 Next engineering work:
 
-1. Reproduce and validate **sustained 1.0×** in the fixed training-room benchmark (about **16.67 ms/frame** for the tested 60 Hz pace) with robust P95/P99, correct audio and accurate simulated timing.
-2. Profile and reduce GPU scheduling, submission and copy-stage critical-path costs with **cross-vendor Vulkan** approaches.
-3. Expand automated tests across **representative workloads**: menus, exploration, battles, transitions, cutscenes and heavier effects. Global engine improvements should apply across areas; each room should not need a bespoke optimization.
-4. Resolve known graphics/memory discrepancies against references and reduce shader cold-start stalls.
-5. Test full keyboard/mouse and Xbox controls, native save reading and longer progression, then prepare a Windows build.
+1. Finish the **TEV specialization A/B run** and retain the change only if speed and fidelity both improve.
+2. Confirm and extend the **1.013× training-room mean** into sustained normal-speed gameplay, including P95/P99 and sound/input stability, without manipulating simulation timing.
+3. Expand automated tests across **representative scenes**: menus, exploration, battles, transitions, cinematics, and challenging effects.
+4. Fix known GX/Vulkan, Dolphin-memory and cold shader-cache differences, preserving existing regression evidence.
+5. Validate full keyboard/mouse and Xbox gameplay actions, protect and test save loading, and prepare Windows compilation and compatibility testing.
 
-**Performance speed is not the project's percentage of completion.** The latest measured benchmark does not establish whole-game performance or a public release date. **x86-64-v3** is the chosen CPU ISA baseline; no full minimum hardware requirements have yet been measured.
+**A speed ratio is not the percentage of the project completed.** The nominal 60 Hz simulation target for the tested benchmark is approximately **16.67 ms/frame**. The first **1.013× average** result does not establish smooth presentation on every frame or full-game performance. **x86-64-v3** remains the declared CPU ISA baseline, with no complete minimum system specifications established.
 
 ## Making Wii controls work on PC
 
