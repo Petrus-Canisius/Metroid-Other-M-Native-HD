@@ -2,7 +2,7 @@
 
 Je développe une **adaptation PC native et indépendante de *Metroid: Other M***, sorti à l'origine sur Nintendo Wii. Mon objectif est de préserver le jeu original tout en le rendant utilisable sur les ordinateurs modernes, avec des commandes adaptées et, à terme, des améliorations graphiques facultatives.
 
-**État actuel : le prototype privé Linux atteint environ 0,978× dans un banc d'entraînement ; la fluidité et la compatibilité du jeu complet ne sont pas validées. Aucune version jouable publique n'est distribuée.**
+**État actuel : le prototype privé Linux a franchi 1,0× de vitesse moyenne dans un benchmark d'entraînement (1,013×) ; la stabilité et la compatibilité du jeu complet restent à valider. Aucune version jouable publique n'est distribuée.**
 
 [English](README.md) | **Français**
 
@@ -22,38 +22,43 @@ Je souhaite proposer à terme :
 
 Ce sont des **objectifs**, et non des fonctionnalités déjà disponibles dans une version publique.
 
-## Dernières avancées — 3 novembre 2026
+## Dernières avancées — 3 novembre 2026 : premier benchmark supérieur à 1,0×
 
-**Le prototype privé sous Ubuntu affiche une fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique.** Le déplacement et le tir ont été démontrés par enregistrement puis rejeu de commandes dans la salle d'entraînement. Toutes les commandes et l'intégralité du jeu ne sont pas encore validées.
+**Pour la première fois, le prototype PC natif privé dépasse la vitesse normale dans le banc de référence de la salle d'entraînement : 1,013× en moyenne selon le dernier rapport.** Ce résultat provient d'une optimisation ciblée du fragment shader Vulkan, vérifiée sur **six comparaisons A/B alternées**, avec un gain moyen de **0,52 ms par trame**, un P99 amélioré et des trames de référence identiques. Claude indique également que la **suite complète de non-régression a réussi**.
 
-Le **dernier rapport privé** indique une vitesse de simulation d'environ **0,978×** sur le banc de la salle d'entraînement (**environ 16,8–17,2 ms/trame**), après une optimisation mesurée des soumissions Vulkan. Cela **ne démontre pas encore 1,0× stable dans l'ensemble du jeu**, et **aucune version jouable publique n'est distribuée**.
+**Cette étape ne démontre pas encore que l'ensemble du jeu fonctionne à 1,0× de façon stable. Aucune version jouable publique n'est disponible.**
 
-| Domaine | Derniers résultats rapportés |
+Le prototype privé Ubuntu affiche une fenêtre SDL3/Vulkan, produit du son et reconnaît une manette Xbox Series X physique. Des commandes enregistrées puis rejouées ont déjà permis de démontrer le déplacement et le tir de Samus. Les autres commandes et le jeu complet restent à valider.
+
+| Domaine | Dernières données du développement privé |
 | --- | --- |
-| Recompilation native | **32 282 fonctions PowerPC** traduites ; **753/753 tests** du traducteur |
-| Expérience Linux | Fenêtre SDL3/Vulkan, sortie audio, manette Xbox réelle ; déplacement et tir démontrés par rejeu |
-| Performances graphiques | Passage de **4 à 8 soumissions Vulkan simultanées** : environ **−1,28 ms/trame** sur six paires A/B ; trois paires supplémentaires confirment **−1,20 ms/trame** |
-| Compilation | **ThinLTO avec Clang/LLD** sur le rendu : gain antérieur d'environ **−0,58 ms/trame** ; PGO testé puis rejeté car plus lent |
-| Coût mémoire | Environ **1 041 Mo de RAM** avec huit emplacements, contre **863 Mo** avec quatre, sur la machine de développement |
-| Fidélité | **28 167 trames internes** identiques ; **753/753** tests du traducteur et **3/3** des commandes ; **156,73 s** d'audio conformes |
-| Copies GPU | **4 671 copies contrôlées**, aucune différence lors de la dernière validation concernée |
-| Écarts connus | **29 trames de fondu** différentes de la référence logicielle ; **135 et 387 octets** d'écart mémoire avec Dolphin |
-| Sauvegarde PAL | Export privé européen **R3OP** identifié, trois emplacements chiffrés ; progression « 100 % » et chargement non vérifiés |
-| Windows | Base multiplateforme ; **aucune compilation ni validation Windows** |
+| **Jalon de performance** | **1,013× de vitesse moyenne** dans la salle d'entraînement : premier résultat mesuré dépassant 1,0× |
+| **Nouvelle optimisation Vulkan** | Shader du test alpha sans `discard` **uniquement lorsque la configuration du test garantit que tous les fragments passent** : **−0,52 ms/trame** sur six paires A/B ; trames de référence identiques |
+| Optimisations précédentes | Huit soumissions Vulkan en vol : **−1,28 ms/trame** sur six paires ; **ThinLTO : −0,58 ms/trame** sur six paires |
+| Recompilation et tests | **32 282 fonctions PowerPC** traduites ; **753/753 tests** du traducteur dans les validations documentées ; dernière suite complète annoncée réussie |
+| Graphismes et audio | **28 167 trames internes** dans la suite de référence ; **156,73 secondes d'audio** vérifiées précédemment ; divergences avec Dolphin non résolues |
+| Commandes | Manette Xbox reconnue, déplacements et tirs démontrés par rejeu ; commandes complètes encore non validées |
+| Diagnostic NVIDIA | Modification PowerMizer **non effectuée** : extension NV-CONTROL inaccessible sous Wayland/Xwayland. Pilote laissé inchangé |
+| Expérience en cours | Spécialisation du shader **TEV** par constantes Vulkan, évaluée sur **six paires A/B** ; **résultat encore inconnu** |
+| Compatibilité | Cible CPU **x86-64-v3**, objectif de neutralité Vulkan ; **aucune version Windows testée ni distribution publique** |
 
-### Signification de ces performances
+### Pourquoi le moteur dépasse désormais 1,0×
 
-Le test couvre la salle d'entraînement entre **438 et 470 secondes simulées**. Pour une simulation à 60 Hz, **1,0× correspond à environ 16,67 ms/trame**. La vitesse actuelle de **0,978×** est un résultat de benchmark, **pas un pourcentage d'achèvement** ni la preuve de performances identiques dans les autres zones. Le **P99 reste autour de 20,2–20,5 ms**.
+L'instrumentation a montré que le travail des fragments TEV occupait une grande partie du temps des passes GPU. Une expérience supprimant `discard` partout réduisait ce coût, mais n'était pas adaptée à une version définitive car elle aurait pu produire des images incorrectes.
 
-Le gain provient d'une **modification démontrée** : huit emplacements de soumission Vulkan au lieu de quatre. Six emplacements n'apportaient pas de gain confirmé ; douze augmentaient la mémoire sans bénéfice clair. Une autre correction a supprimé **8 038 attentes EFB/texture artificielles** causées par un calcul de plages mémoire trop large : elle améliore la précision, mais **aucun gain moyen n'a été démontré**.
+La solution retenue est **conditionnelle** : lorsque les règles du test alpha Wii garantissent que tous les fragments passent, le moteur utilise un shader Vulkan qui n'exécute pas `discard`. Dans les autres cas, il conserve le comportement nécessaire.
 
-ThinLTO a également apporté un gain mesuré, tandis que PGO a été rejeté. La comparaison de la compilation des fonctions PowerPC avec `-ffp-contract=off` n'a pas modifié leur code machine ; le runtime applique désormais un garde-fou contre certaines contractions flottantes. La cible CPU officielle est **x86-64-v3**, sans que cela définisse à lui seul la configuration minimale complète.
+Après préchauffage des pipelines, **six comparaisons A/B** ont montré **−0,52 ms/trame en moyenne**, une vitesse de **1,013×**, un meilleur P99 et des références graphiques identiques. La non-régression complète a ensuite été annoncée réussie. Le rapport partagé ne donne pas de nouvelle plage chiffrée précise pour le P99.
+
+### Portée réelle du résultat
+
+À 60 Hz, la vitesse normale correspond à environ **16,67 ms/trame** pour le scénario de référence. Dépasser **1,0× en moyenne dans cette salle** ne garantit ni des temps de trame réguliers partout, ni tous les combats, cinématiques, chargements ou commandes. Les **29 trames de fondu** différentes de la référence logicielle et les écarts de **135/387 octets** par rapport à Dolphin restent à examiner.
+
+Cette optimisation appartient au **moteur Vulkan commun**, et non à une salle particulière. Les autres zones devront être testées de façon représentative, sans supposer qu'il faudra les optimiser une par une.
 
 ### Étapes suivantes
 
-La trace indique notamment **4,65 ms/trame d'exécution GPU**, **2,43 ms/trame de relecture/encodage** et **2,26 ms/trame de délai avant le GPU** dans le chemin étudié. La RTX 4090 utilisée pour le développement reste souvent en état d'économie **P8**. **L'influence réelle de cet état n'est pas encore prouvée** : un test temporaire et réversible a été autorisé, sans résultat disponible à ce stade. Le moteur final ne devra pas exiger un réglage NVIDIA.
-
-Les prochaines priorités sont : obtenir **1,0× reproductible**, améliorer la régularité des trames, vérifier plusieurs scènes et les commandes, corriger les écarts graphiques et mémoire, puis valider les sauvegardes et Windows. Les optimisations portent sur le moteur commun ; chaque zone devra être testée, pas optimisée individuellement par principe.
+Terminer les mesures A/B de la spécialisation **TEV** avant d'en annoncer les résultats. Consolider ensuite une marge de performance supérieure à 1,0×, contrôler P95/P99 et les saccades à froid, élargir les tests de gameplay, résoudre les écarts restants et valider les sauvegardes puis Windows. Le pilote NVIDIA n'a pas été modifié durant le diagnostic Wayland.
 
 Détails : [état de développement](docs/BUILD_STATUS.md), [journal](docs/DEVELOPMENT_LOG.md), [feuille de route](docs/ROADMAP.md).
 
