@@ -12,7 +12,7 @@ The latest private reports record **32,282 translated PowerPC functions**, with 
 
 ## Can I play the game now?
 
-**There is no public build or downloadable playable version.** A private Ubuntu prototype opens a real SDL3/Vulkan game window, plays audio and reads a physical Xbox controller. Some actions work, and a training-room benchmark is close to normal speed, but **sustained 1.0× and full-game compatibility are unverified**.
+**There is no public build or downloadable playable version.** A private Ubuntu prototype opens a real SDL3/Vulkan game window, plays audio and reads a physical Xbox controller. Some actions work, and a training-room benchmark has **exceeded 1.0× on average**, but **stable 1.0× across the game and full-game compatibility remain unverified**.
 
 ## Can Samus already be controlled?
 
@@ -20,17 +20,19 @@ In an earlier physical Xbox Series X controller session, the inputs were recorde
 
 ## How fast is the native prototype?
 
-The **latest private training-room benchmark** reports approximately **0.978× simulation speed** (**16.8–17.2 ms/frame**) after increasing in-flight Vulkan submission slots from four to eight. The six-pair alternating A/B comparison showed an average **−1.28 ms/frame**, with an additional three-pair check reporting **−1.20 ms/frame**. Renderer ThinLTO had previously saved **~0.58 ms/frame** in controlled pairs.
+The **latest private fixed training-room benchmark exceeded normal simulation speed for the first time: 1.013× average**. A Vulkan alpha-test shader specialization produced **−0.52 ms/frame** across **six paired A/B comparisons**, with improved P99, matching tested frames, and a subsequently reported passing full regression suite. The shader avoids fragment `discard` **only when the emulated alpha test is guaranteed always to pass**.
 
-The tested 60 Hz reference is approximately **16.67 ms/frame for normal-speed simulation**. The current **P99 is about 20.2–20.5 ms**, so the result does **not** demonstrate perfectly smooth, sustained 1.0×, and it applies only to the fixed training-room scenario. No full-game benchmark has been completed. The performance multiplier is not the project's completion percentage.
+Earlier, eight simultaneous Vulkan submission slots improved frame time by **−1.28 ms/frame** in six A/B pairs (approximately **0.978×** in that session). Clang/LLD renderer ThinLTO had previously saved **−0.58 ms/frame** in six paired measurements.
+
+The tested 60 Hz simulation budget is about **16.67 ms/frame**. **1.013× is a mean speed in one scene, not a claim that every frame is smooth or that all game areas run at full speed**. The performance ratio is not the percentage of work completed. No public playable build is available.
 
 ## What are the most important graphics and CPU improvements?
 
-The private implementation uses cached vertex and lighting calculations, GPU EFB texture copies, two ordered transformation workers, parallel triangle assembly/clipping, optimized TEV shaders and bounded Vulkan image reuse.
+The engine incorporates cached vertex and lighting calculations, GPU texture copies, two ordered transformation workers, parallel triangle assembly/clipping, TEV shader optimizations and bounded Vulkan image reuse. Recent A/B-tested improvements include **renderer ThinLTO (~−0.58 ms/frame)**, **eight in-flight Vulkan submission slots (~−1.28 ms/frame)**, and **conditional alpha-test shader specialization (~−0.52 ms/frame)**.
 
-**Newer measured improvements:** Clang/LLD renderer **ThinLTO (~−0.58 ms/frame)** and **eight simultaneous Vulkan submission slots (~−1.28 ms/frame on six paired runs)**. The eight-slot version uses around **1,041 MB RAM** on the development system, compared with **863 MB** for four slots.
+The alpha-test change is a shared Vulkan renderer optimization rather than a training-room-specific workaround. An additional TEV specialization experiment was still running in the latest shared progress log, with **no result reported yet**.
 
-An EFB memory-range correction eliminated **8,038 false waits** but produced no demonstrated average frame-time improvement. Experimental PGO was slower and was not adopted. All retained improvements were subjected to scoped regression testing.
+A temporary NVIDIA PowerMizer test **could not run under Wayland/Xwayland** because NV-CONTROL was unavailable. No GPU driver setting was changed. The renderer should remain portable across compatible Vulkan GPUs.
 
 ## Why does the game sometimes stutter at startup?
 
